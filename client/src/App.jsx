@@ -3,6 +3,8 @@ import { Layout } from '@/layouts/Layout';
 import { Home } from '@/pages/Home';
 import { Shop } from '@/pages/Shop';
 import { ProductDetail } from '@/pages/ProductDetail';
+import { NewArrivals } from '@/pages/NewArrivals';
+import { BestSellers } from '@/pages/BestSellers';
 import { Cart } from '@/pages/Cart';
 import { Checkout } from '@/pages/Checkout';
 import { OrderTracking } from '@/pages/OrderTracking';
@@ -32,6 +34,8 @@ const App = () => (
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="shop" element={<Shop />} />
+        <Route path="new-arrivals" element={<NewArrivals />} />
+        <Route path="best-sellers" element={<BestSellers />} />
         <Route path="categories" element={<Categories />} />
         <Route path="product/:slug" element={<ProductDetail />} />
         <Route path="cart" element={<Cart />} />

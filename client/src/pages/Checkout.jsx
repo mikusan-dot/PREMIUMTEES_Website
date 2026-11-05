@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCartStore } from '@/store/cartStore';
@@ -55,6 +55,7 @@ export const Checkout = () => {
   }
 
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
@@ -62,6 +63,8 @@ export const Checkout = () => {
     resolver: zodResolver(checkoutSchema),
     defaultValues: { paymentMethod: 'cod', terms: false },
   });
+
+  const paymentMethod = useWatch({ control, name: 'paymentMethod' });
 
   const onSubmit = (data) => {
     setProcessing(true);
@@ -167,9 +170,9 @@ export const Checkout = () => {
                     { val: 'nagad', label: 'Nagad', badge: 'Mobile payment' },
                     { val: 'card', label: 'Debit/Credit Card', badge: 'Online payment' },
                   ].map((m) => (
-                    <label key={m.val} className={`cursor-pointer p-3 rounded-xl border transition-all ${data => (false ? '' : '')}`}>
+                    <label key={m.val} className={`cursor-pointer p-3 rounded-xl border transition-all`}>
                       <input type="radio" {...register('paymentMethod', { value: m.val })} className="sr-only peer" />
-                      <div className={`flex flex-col items-center p-3 rounded-xl border transition-all peer-checked:border-brand-accent peer-checked:bg-brand-offwhite/50 ${data.paymentMethod === m.val ? 'border-brand-accent bg-brand-offwhite/50' : 'border-brand-border hover:border-brand-charcoal'}`}>
+                      <div className={`flex flex-col items-center p-3 rounded-xl border transition-all peer-checked:border-brand-accent peer-checked:bg-brand-offwhite/50 ${paymentMethod === m.val ? 'border-brand-accent bg-brand-offwhite/50' : 'border-brand-border hover:border-brand-charcoal'}`}>
                         <span className="text-xs font-semibold text-brand-charcoal">{m.label}</span>
                         <span className="text-xs text-brand-muted">{m.badge}</span>
                       </div>

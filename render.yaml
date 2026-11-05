@@ -1,0 +1,44 @@
+# Render deployment configuration — Premium Tees
+# Client static site with SPA fallback for React Router client-side routes.
+
+services:
+  - type: web
+    name: premium-tees-client
+    env: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    # Rewrite client-side routes to index.html so React Router handles them.
+    # Status 200 keeps the URL (e.g. /checkout) while serving index.html.
+    # Existing static files (assets, index.html) are served directly first.
+    redirects:
+      - source: /checkout
+        destination: /index.html
+        status: 200
+      - source: /cart
+        destination: /index.html
+        status: 200
+      - source: /track
+        destination: /index.html
+        status: 200
+      - source: /shop
+        destination: /index.html
+        status: 200
+      - source: /categories
+        destination: /index.html
+        status: 200
+      - source: /new-arrivals
+        destination: /index.html
+        status: 200
+      - source: /best-sellers
+        destination: /index.html
+        status: 200
+      - source: /product/:splat
+        destination: /index.html
+        status: 200
+      - source: /about
+        destination: /index.html
+        status: 200
+      - source: /contact
+        destination: /index.html
+        status: 200

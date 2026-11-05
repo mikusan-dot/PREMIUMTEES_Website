@@ -12,33 +12,6 @@ services:
     # Status 200 keeps the URL (e.g. /checkout) while serving index.html.
     # Existing static files (assets, index.html) are served directly first.
     redirects:
-      - source: /checkout
-        destination: /index.html
-        status: 200
-      - source: /cart
-        destination: /index.html
-        status: 200
-      - source: /track
-        destination: /index.html
-        status: 200
-      - source: /shop
-        destination: /index.html
-        status: 200
-      - source: /categories
-        destination: /index.html
-        status: 200
-      - source: /new-arrivals
-        destination: /index.html
-        status: 200
-      - source: /best-sellers
-        destination: /index.html
-        status: 200
-      - source: /product/:splat
-        destination: /index.html
-        status: 200
-      - source: /about
-        destination: /index.html
-        status: 200
-      - source: /contact
+      - source: /*
         destination: /index.html
         status: 200

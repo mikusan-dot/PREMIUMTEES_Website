@@ -17,7 +17,7 @@ export const AdminLogin = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/admin/auth/login`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://premiumtees-website.onrender.com/api'}/api/admin/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticateAdmin, authorize } from '../middleware/auth.js';
+import multer from 'multer';
 import {
   productController, categoryController, orderController, couponController,
   dashboardController, settingsController, paymentController,
@@ -7,13 +8,19 @@ import {
 import {
   authController, adminController, reportsController, activityLogController,
 } from '../controllers/admin.js';
+import { uploadController } from '../controllers/uploadController.js';
 import { validate } from '../validators/index.js';
 import { productSchema, orderSchema, couponSchema, categorySchema, settingsSchema, authLoginSchema } from '../validators/index.js';
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 const router = Router();
 
 // Auth
 router.get('/auth/me', authenticateAdmin, authController.me);
+
+// Image upload (Cloudinary)
+router.post('/upload', authenticateAdmin, authorize('super_admin', 'product_manager', 'marketing_manager'), upload.single('image'), uploadController.uploadImage);
 
 // Dashboard
 router.get('/dashboard', authenticateAdmin, authorize('super_admin', 'product_manager', 'order_manager', 'marketing_manager', 'viewer'), dashboardController.stats);

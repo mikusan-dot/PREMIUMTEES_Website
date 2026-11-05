@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+  }
+
+  body {
+    @apply bg-brand-offwhite text-brand-charcoal antialiased selection:bg-brand-accent selection:text-white;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-serif {
+    font-family: 'Playfair Display', ui-serif, Georgia, serif;
+    color: #0a0a0a;
+  }
+
+  h1 { @apply text-5xl md:text-6xl font-bold leading-tight text-brand-black; }
+  h2 { @apply text-4xl md:text-5xl font-bold leading-tight text-brand-black; }
+  h3 { @apply text-3xl md:text-4xl font-bold leading-tight text-brand-black; }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    font-family: inherit;
+  }
+
+  * {
+    outline: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-charcoal rounded-full;
+  }
+
+  @media (max-width: 640px) {
+    html {
+      scroll-padding-top: 64px;
+    }
+  }
+}
+
+@layer components {
+  .container-premium {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section {
+    @apply py-20 md:py-32;
+  }
+
+  .section-header {
+    @apply mb-16 text-center;
+  }
+
+  .section-title {
+    @apply text-4xl md:text-5xl font-bold text-brand-black mb-6 tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-lg md:text-xl text-brand-charcoal max-w-2xl mx-auto;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-5 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-black {
+    @apply btn bg-brand-black text-white hover:bg-brand-charcoal focus:ring-brand-black;
+  }
+
+  .btn-white {
+    @apply btn bg-white text-brand-black border border-brand-charcoal hover:bg-brand-charcoal hover:text-white focus:ring-brand-black;
+  }
+
+  .btn-outline {
+    @apply btn border border-brand-charcoal text-brand-black hover:bg-brand-black hover:text-white focus:ring-brand-black;
+  }
+
+  .btn-accent {
+    @apply btn bg-brand-accent text-white hover:bg-brand-accentHover focus:ring-brand-accent;
+  }
+
+  .input {
+    @apply block w-full rounded-md border border-brand-border bg-white px-4 py-2.5 text-brand-charcoal shadow-sm placeholder:text-brand-muted focus:border-brand-accent focus:ring-1 focus:ring-brand-accent focus:outline-none transition-all;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-brand-charcoal mb-1.5;
+  }
+}

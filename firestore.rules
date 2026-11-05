@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Deny all access by default; backend Admin SDK bypasses these rules.
+    // Frontend never accesses Firestore directly — all reads/writes go through
+    // the secured Node.js backend with Firebase Auth + role-based authorization.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,72 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Layout } from '@/layouts/Layout';
+import { Home } from '@/pages/Home';
+import { Shop } from '@/pages/Shop';
+import { ProductDetail } from '@/pages/ProductDetail';
+import { Cart } from '@/pages/Cart';
+import { Checkout } from '@/pages/Checkout';
+import { OrderTracking } from '@/pages/OrderTracking';
+import { Categories } from '@/pages/Categories';
+import { About } from '@/pages/About';
+import { Contact } from '@/pages/Contact';
+import { NotFound } from '@/pages/NotFound';
+import { AdminLayout } from '@/admin/layout/AdminLayout';
+import { AdminLogin } from '@/admin/pages/Login';
+import {
+  AdminDashboard,
+  AdminProducts,
+  AdminOrders,
+  AdminCategories,
+  AdminSettings,
+  AdminCoupons,
+  AdminReports,
+  AdminUsers,
+  AdminPayments,
+} from '@/admin/pages';
+import { requireAdmin } from '@/admin/auth/requireAdmin';
+
+const App = () => (
+  <BrowserRouter>
+    <Routes>
+      {/* Public storefront */}
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="shop" element={<Shop />} />
+        <Route path="categories" element={<Categories />} />
+        <Route path="product/:slug" element={<ProductDetail />} />
+        <Route path="cart" element={<Cart />} />
+        <Route path="checkout" element={<Checkout />} />
+        <Route path="track" element={<OrderTracking />} />
+        <Route path="about" element={<About />} />
+        <Route path="contact" element={<Contact />} />
+      </Route>
+
+      {/* Admin */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route
+        path="/admin/*"
+        element={
+          <>
+            <requireAdmin />
+            <AdminLayout />
+          </>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="categories" element={<AdminCategories />} />
+        <Route path="coupons" element={<AdminCoupons />} />
+        <Route path="payments" element={<AdminPayments />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="reports" element={<AdminReports />} />
+        <Route path="settings" element={<AdminSettings />} />
+      </Route>
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </BrowserRouter>
+);
+
+export default App;

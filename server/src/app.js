@@ -50,6 +50,11 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' });
 });
 
+// Root route
+app.get('/', (_req, res) => {
+  res.send('Premium Tees E-commerce Platform is running. Visit /api/health for status.');
+});
+
 // Route imports
 import publicRoutes from './routes/public.js';
 import adminAuthRoutes from './routes/adminAuth.js';

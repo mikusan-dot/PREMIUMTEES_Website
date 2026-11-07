@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { apiUrl } from '@/services/api';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Full name is required'),
@@ -98,7 +99,7 @@ export const Checkout = () => {
       notes: data.notes,
     };
 
-    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/orders`, {
+    fetch(apiUrl('/orders'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderPayload),
@@ -171,7 +172,7 @@ export const Checkout = () => {
                     { val: 'card', label: 'Debit/Credit Card', badge: 'Online payment' },
                   ].map((m) => (
                     <label key={m.val} className={`cursor-pointer p-3 rounded-xl border transition-all`}>
-                      <input type="radio" {...register('paymentMethod', { value: m.val })} className="sr-only peer" />
+                      <input type="radio" value={m.val} {...register('paymentMethod')} className="sr-only peer" />
                       <div className={`flex flex-col items-center p-3 rounded-xl border transition-all peer-checked:border-brand-accent peer-checked:bg-brand-offwhite/50 ${paymentMethod === m.val ? 'border-brand-accent bg-brand-offwhite/50' : 'border-brand-border hover:border-brand-charcoal'}`}>
                         <span className="text-xs font-semibold text-brand-charcoal">{m.label}</span>
                         <span className="text-xs text-brand-muted">{m.badge}</span>

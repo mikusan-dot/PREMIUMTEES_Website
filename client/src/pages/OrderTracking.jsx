@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { apiUrl } from '@/services/api';
 
 export const OrderTracking = () => {
   const [searchParams] = useSearchParams();
@@ -27,7 +28,7 @@ export const OrderTracking = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/orders/track`, {
+      const res = await fetch(apiUrl('/orders/track'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, phone }),

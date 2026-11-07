@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ShieldAlert } from 'lucide-react';
+import { apiUrl } from '@/services/api';
 
 export const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +18,7 @@ export const AdminLogin = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://premiumtees-website.onrender.com/api'}/api/admin/auth/login`, {
+      const res = await fetch(apiUrl('/admin/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

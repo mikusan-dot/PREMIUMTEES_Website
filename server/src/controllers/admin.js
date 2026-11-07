@@ -1,3 +1,4 @@
+import { getAuth } from '../config/firebase.js';
 import { db } from '../services/db.js';
 import { COLLECTIONS, logAction } from '../services/firestoreService.js';
 
@@ -11,8 +12,31 @@ export const authController = {
         const token = 'dev-token-' + Buffer.from(email).toString('base64');
         return res.json({ token, user });
       }
-      // Production: verify against Firebase Auth users with admin claims
-      res.status(501).json({ error: 'Firebase Auth login not configured. Enable DEV_MODE or set Firebase credentials.' });
+      // Production: verify email/password with Firebase Auth (REST API), then
+      // confirm the account is an admin and return the Firebase ID token.
+      const apiKey = process.env.FIREBASE_API_KEY;
+      if (!apiKey || !process.env.FIREBASE_PROJECT_ID) {
+        return res.status(501).json({ error: 'Firebase Auth login not configured. Set FIREBASE_API_KEY and the Firebase Admin credentials, or enable DEV_MODE for local testing.' });
+      }
+      const fbRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, returnSecureToken: true }),
+      });
+      const fbJson = await fbRes.json();
+      if (!fbRes.ok) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+      const decoded = await getAuth().verifyIdToken(fbJson.idToken);
+      let role = decoded.role;
+      if (!role) {
+        const snap = await db.collection(COLLECTIONS.ADMINS).where('email', '==', email).limit(1).get();
+        if (!snap.empty) role = snap.docs[0].data().role;
+      }
+      if (!role) {
+        return res.status(403).json({ error: 'This account is not an admin' });
+      }
+      return res.json({ token: fbJson.idToken, user: { uid: decoded.uid, email: decoded.email, role } });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

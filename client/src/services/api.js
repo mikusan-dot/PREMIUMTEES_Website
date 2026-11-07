@@ -1,6 +1,15 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://premiumtees-website.onrender.com/api';
+// Single source of truth for the backend address.
+// Accepts VITE_API_URL (preferred) or the legacy VITE_API_BASE_URL, with or
+// without a trailing slash or "/api" suffix, and normalises it to the origin.
+const DEFAULT_API_ORIGIN = 'https://premiumtees-website.onrender.com';
+const rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || DEFAULT_API_ORIGIN;
+export const API_ORIGIN = rawApiUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+export const API_BASE_URL = `${API_ORIGIN}/api`;
+
+// Build a full URL for fetch() calls, e.g. apiUrl('/orders') -> https://host/api/orders
+export const apiUrl = (path) => `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

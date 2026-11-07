@@ -21,9 +21,16 @@ app.use(helmet({
 }));
 
 // CORS — restrict to frontend origin in production
-const corsOrigin = process.env.FRONTEND_URL || '*';
+// FRONTEND_URL may hold one or several comma-separated origins. Trailing
+// slashes are ignored, since browsers send the Origin header without one.
+const allowedOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((o) => o.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
 app.use(cors({
-  origin: corsOrigin,
+  origin: allowedOrigins.length
+    ? (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin))
+    : true,
   credentials: true,
 }));
 
@@ -35,10 +42,18 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
-const authLimiter = rateLimit({
+// Strict limit for login attempts only
+const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { error: 'Too many login attempts, please try again later' },
+});
+
+// Generous limit for the authenticated admin API (dashboard makes many calls)
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  message: { error: 'Too many requests, please try again later' },
 });
 
 app.use(cookieParser());
@@ -64,9 +79,9 @@ import adminRoutes from './routes/admin.js';
 app.use('/api', publicRoutes);
 
 // Admin auth (login — public, no token required)
-app.use('/api/admin/auth', adminAuthRoutes);
+app.use('/api/admin/auth', loginLimiter, adminAuthRoutes);
 
 // Admin API (rate-limited + authenticated)
-app.use('/api/admin', authLimiter, authenticateAdmin, adminRoutes);
+app.use('/api/admin', adminLimiter, authenticateAdmin, adminRoutes);
 
 export default app;

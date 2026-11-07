@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 
@@ -22,7 +23,24 @@ export const uploadController = {
         const detail = pingErr?.error?.message || pingErr?.message || 'unknown';
         diagnosis = ` Diagnosis from Cloudinary: ${detail}`;
       }
-      res.status(500).json({ error: `${err.message}${hint}${diagnosis}` });
+      // Raw test upload of a 1x1 pixel so we can read Cloudinary's actual response.
+      let rawTest = '';
+      try {
+        const key = (process.env.CLOUDINARY_API_KEY || '').trim();
+        const secret = (process.env.CLOUDINARY_API_SECRET || '').trim();
+        const timestamp = Math.floor(Date.now() / 1000);
+        const signature = crypto.createHash('sha1').update(`timestamp=${timestamp}${secret}`).digest('hex');
+        const body = new URLSearchParams({
+          file: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+          api_key: key, timestamp: String(timestamp), signature,
+        });
+        const r = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/image/upload`, { method: 'POST', body });
+        const text = (await r.text()).replace(/\s+/g, ' ').slice(0, 200);
+        rawTest = ` Raw test upload: HTTP ${r.status} ${text}`;
+      } catch (rawErr) {
+        rawTest = ` Raw test upload failed to run: ${rawErr.message}`;
+      }
+      res.status(500).json({ error: `${err.message}${hint}${diagnosis}${rawTest}` });
     }
   },
 };

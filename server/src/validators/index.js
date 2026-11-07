@@ -81,6 +81,19 @@ export const settingsSchema = z.object({
   taxPercent: z.number().nonnegative().default(0),
 });
 
+export const ADMIN_ROLES = ['super_admin', 'product_manager', 'order_manager', 'marketing_manager', 'viewer'];
+
+export const adminUserSchema = z.object({
+  email: z.string().email(),
+  // Only needed when the Firebase sign-in account does not exist yet.
+  password: z.string().min(6).optional(),
+  role: z.enum(ADMIN_ROLES),
+});
+
+export const adminRoleSchema = z.object({
+  role: z.enum(ADMIN_ROLES),
+});
+
 export const authLoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),

@@ -76,11 +76,16 @@ export const productController = {
   create: async (req, res) => {
     try {
       const data = req.validated;
+      const now = new Date().toISOString();
       const doc = await db.collection(COLLECTIONS.PRODUCTS).add({
         ...data,
         status: data.status || 'active',
         featured: !!data.featured,
         bestSeller: !!data.bestSeller,
+        // Firestore does not add timestamps itself; without createdAt the admin
+        // list (orderBy createdAt) would never show the new product.
+        createdAt: now,
+        updatedAt: now,
       });
       await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'product_created', target: `products/${doc.id}`, details: data });
       res.status(201).json({ id: doc.id, message: 'Product created' });
@@ -92,7 +97,7 @@ export const productController = {
   update: async (req, res) => {
     try {
       const data = req.validated;
-      await db.collection(COLLECTIONS.PRODUCTS).doc(req.params.id).set({ ...data, updatedAt: new Date().toISOString() });
+      await db.collection(COLLECTIONS.PRODUCTS).doc(req.params.id).set({ ...data, updatedAt: new Date().toISOString() }, { merge: true });
       await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'product_updated', target: `products/${req.params.id}`, details: data });
       res.json({ message: 'Product updated' });
     } catch (err) {
@@ -151,9 +156,31 @@ export const categoryController = {
   create: async (req, res) => {
     try {
       const data = req.validated;
-      const doc = await db.collection(COLLECTIONS.CATEGORIES).add(data);
+      const now = new Date().toISOString();
+      const doc = await db.collection(COLLECTIONS.CATEGORIES).add({ ...data, createdAt: now, updatedAt: now });
       await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'category_created', target: `categories/${doc.id}`, details: data });
       res.status(201).json({ id: doc.id, message: 'Category created' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  update: async (req, res) => {
+    try {
+      const data = req.validated;
+      await db.collection(COLLECTIONS.CATEGORIES).doc(req.params.id).set({ ...data, updatedAt: new Date().toISOString() }, { merge: true });
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'category_updated', target: `categories/${req.params.id}`, details: data });
+      res.json({ message: 'Category updated' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  delete: async (req, res) => {
+    try {
+      await db.collection(COLLECTIONS.CATEGORIES).doc(req.params.id).delete();
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'category_deleted', target: `categories/${req.params.id}` });
+      res.json({ message: 'Category deleted' });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -181,10 +208,12 @@ export const orderController = {
   create: async (req, res) => {
     try {
       const data = req.validated;
-      // Server-side: never trust client prices. Recompute from snapshot prices would require
-      // product lookup; here we snapshot the prices provided but validate structure.
+      // Generate the public order id ONCE, so the id stored in the database is the
+      // same one returned to the customer (it used to be generated three times).
+      const orderId = generateOrderId();
+      const now = new Date().toISOString();
       const orderRef = await db.collection(COLLECTIONS.ORDERS).add({
-        orderId: generateOrderId(),
+        orderId,
         customer: data.customer,
         items: data.items,
         subtotal: data.subtotal,
@@ -195,29 +224,44 @@ export const orderController = {
         paymentStatus: data.paymentMethod === 'cod' ? 'unpaid' : 'pending',
         orderStatus: 'pending',
         notes: data.notes || null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
       });
 
-      // Decrement stock atomically (dev mode: simple; prod: Firestore transaction)
-      if (process.env.DEV_MODE === 'true') {
-        for (const item of data.items) {
-          const snap = await db.collection(COLLECTIONS.PRODUCTS).query((d) => {
-            return (d.variants || []).some((v) => v.sku === item.variantId);
-          });
-          for (const docSnap of snap) {
-            const p = docSnap.data();
-            const variants = (p.variants || []).map((v) => {
-              if (v.sku === item.variantId) v.stock = Math.max(0, v.stock - item.quantity);
-              return v;
-            });
-            await db.collection(COLLECTIONS.PRODUCTS).doc(p.id).set({ ...p, variants, updatedAt: new Date().toISOString() });
+      // Reduce stock for each ordered variant.
+      try {
+        if (process.env.DEV_MODE === 'true') {
+          for (const item of data.items) {
+            const snap = await db.collection(COLLECTIONS.PRODUCTS).query((d) => (d.variants || []).some((v) => v.sku === item.variantId));
+            for (const docSnap of snap) {
+              const p = docSnap.data();
+              const variants = (p.variants || []).map((v) => (v.sku === item.variantId ? { ...v, stock: Math.max(0, v.stock - item.quantity) } : v));
+              await db.collection(COLLECTIONS.PRODUCTS).doc(p.id).set({ ...p, variants, updatedAt: now });
+            }
           }
+        } else {
+          await db.runTransaction(async (tx) => {
+            const refs = [...new Set(data.items.map((i) => i.productId))].map((id) => db.collection(COLLECTIONS.PRODUCTS).doc(id));
+            const snaps = await Promise.all(refs.map((r) => tx.get(r)));
+            snaps.forEach((snap, idx) => {
+              if (!snap.exists) return;
+              const p = snap.data();
+              const variants = (p.variants || []).map((v) => {
+                const ordered = data.items.filter((i) => i.productId === refs[idx].id && i.variantId === v.sku);
+                const qty = ordered.reduce((sum, i) => sum + i.quantity, 0);
+                return qty ? { ...v, stock: Math.max(0, v.stock - qty) } : v;
+              });
+              tx.update(refs[idx], { variants, updatedAt: now });
+            });
+          });
         }
+      } catch (stockErr) {
+        // The order is already saved; do not fail the customer's checkout over stock bookkeeping.
+        console.error('[orders] stock update failed:', stockErr.message);
       }
 
-      await logAction({ adminId: null, adminName: 'guest', action: 'order_created', target: `orders/${orderRef.id}`, details: { orderId: generateOrderId() } });
-      res.status(201).json({ orderId: generateOrderId(), message: 'Order placed' });
+      await logAction({ adminId: null, adminName: 'guest', action: 'order_created', target: `orders/${orderRef.id}`, details: { orderId } });
+      res.status(201).json({ orderId, message: 'Order placed' });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -267,6 +311,10 @@ export const orderController = {
   updateStatus: async (req, res) => {
     try {
       const { orderStatus, paymentStatus, note } = req.body;
+      const ORDER_STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+      const PAYMENT_STATUSES = ['unpaid', 'pending', 'paid', 'failed', 'refunded'];
+      if (orderStatus && !ORDER_STATUSES.includes(orderStatus)) return res.status(400).json({ error: 'Invalid order status' });
+      if (paymentStatus && !PAYMENT_STATUSES.includes(paymentStatus)) return res.status(400).json({ error: 'Invalid payment status' });
       const ref = db.collection(COLLECTIONS.ORDERS).doc(req.params.id);
       await ref.set({ ...(orderStatus ? { orderStatus } : {}), ...(paymentStatus ? { paymentStatus } : {}), ...(note ? { note } : {}), updatedAt: new Date().toISOString() }, { merge: true });
       await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'order_status_changed', target: `orders/${req.params.id}`, details: { orderStatus, paymentStatus, note } });
@@ -304,6 +352,39 @@ export const couponController = {
     }
   },
 
+  create: async (req, res) => {
+    try {
+      const data = req.validated;
+      const now = new Date().toISOString();
+      const doc = await db.collection(COLLECTIONS.COUPONS).add({ ...data, usedCount: 0, createdAt: now, updatedAt: now });
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'coupon_created', target: `coupons/${doc.id}`, details: data });
+      res.status(201).json({ id: doc.id, message: 'Coupon created' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  update: async (req, res) => {
+    try {
+      const data = req.validated;
+      await db.collection(COLLECTIONS.COUPONS).doc(req.params.id).set({ ...data, updatedAt: new Date().toISOString() }, { merge: true });
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'coupon_updated', target: `coupons/${req.params.id}`, details: data });
+      res.json({ message: 'Coupon updated' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  delete: async (req, res) => {
+    try {
+      await db.collection(COLLECTIONS.COUPONS).doc(req.params.id).delete();
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'coupon_deleted', target: `coupons/${req.params.id}` });
+      res.json({ message: 'Coupon deleted' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
   adminList: async (req, res) => {
     try {
       let coupons = [];
@@ -331,11 +412,13 @@ export const dashboardController = {
         products = (await db.collection(COLLECTIONS.PRODUCTS).query(() => true)).map((d) => d.data());
       } else {
         const oSnap = await db.collection(COLLECTIONS.ORDERS).get();
-        orders = oSnap.docs.map((d) => d.data());
+        orders = oSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
         const pSnap = await db.collection(COLLECTIONS.PRODUCTS).get();
         products = pSnap.docs.map((d) => d.data());
       }
-      const totalRevenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+      // Cancelled orders are not revenue.
+      const totalRevenue = orders.filter((o) => o.orderStatus !== 'cancelled').reduce((s, o) => s + (o.total || 0), 0);
+      const recentOrders = [...orders].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || ''))).slice(0, 5);
       const pending = orders.filter((o) => o.orderStatus === 'pending').length;
       const completed = orders.filter((o) => o.orderStatus === 'delivered').length;
       const cancelled = orders.filter((o) => o.orderStatus === 'cancelled').length;
@@ -351,7 +434,8 @@ export const dashboardController = {
         activeProducts: products.filter((p) => p.status === 'active').length,
         outOfStockProducts: outOfStock,
         lowStockProducts: lowStock,
-        totalCustomers: orders.reduce((set, o) => { set.add(o.customer.phone); return set; }, new Set()).size,
+        totalCustomers: orders.reduce((set, o) => { if (o.customer?.phone) set.add(o.customer.phone); return set; }, new Set()).size,
+        recentOrders,
       });
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -360,24 +444,43 @@ export const dashboardController = {
 };
 
 // ---------- Settings ----------
+const SETTINGS_DOC = 'main';
+const readSettings = async () => {
+  const snap = await db.collection(COLLECTIONS.SETTINGS).doc(SETTINGS_DOC).get();
+  return snap.exists ? snap.data() : {};
+};
+
+const withDefaults = (settings) => ({
+  brandName: settings.brandName || 'Premium Tees',
+  brandCurrency: settings.brandCurrency || 'BDT',
+  deliveryChargeInsideDhaka: settings.deliveryChargeInsideDhaka ?? 80,
+  deliveryChargeOutsideDhaka: settings.deliveryChargeOutsideDhaka ?? 150,
+  taxPercent: settings.taxPercent ?? 0,
+});
+
 export const settingsController = {
   getPublic: async (_req, res) => {
     try {
-      let settings = {};
-      if (process.env.DEV_MODE === 'true') {
-        const snap = await db.collection(COLLECTIONS.SETTINGS).query(() => true, { limit: 1 });
-        settings = snap.length ? snap[0].data() : {};
-      } else {
-        const snap = await db.collection(COLLECTIONS.SETTINGS).limit(1).get();
-        settings = snap.empty ? {} : snap.docs[0].data();
-      }
-      res.json({
-        brandName: settings.brandName || 'Premium Tees',
-        brandCurrency: settings.brandCurrency || 'BDT',
-        deliveryChargeInsideDhaka: settings.deliveryChargeInsideDhaka ?? 80,
-        deliveryChargeOutsideDhaka: settings.deliveryChargeOutsideDhaka ?? 150,
-        taxPercent: settings.taxPercent ?? 0,
-      });
+      res.json(withDefaults(await readSettings()));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  adminGet: async (_req, res) => {
+    try {
+      res.json({ settings: withDefaults(await readSettings()) });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  adminUpdate: async (req, res) => {
+    try {
+      const data = req.validated;
+      await db.collection(COLLECTIONS.SETTINGS).doc(SETTINGS_DOC).set({ ...data, updatedAt: new Date().toISOString() }, { merge: true });
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'settings_updated', target: `settings/${SETTINGS_DOC}`, details: data });
+      res.json({ message: 'Settings saved', settings: withDefaults(data) });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

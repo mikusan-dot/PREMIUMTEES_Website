@@ -1,15 +1,10 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
-export const requireAdmin = () => {
-  const navigate = useNavigate();
+// Wrap admin pages: visitors without a saved token are sent to the login page.
+// (The server still checks the token on every API call; this just avoids showing
+// an empty admin screen to people who are not signed in.)
+export const RequireAdmin = ({ children }) => {
   const token = localStorage.getItem('pt_admin_token');
-
-  useEffect(() => {
-    if (!token) {
-      navigate('/admin/login');
-    }
-  }, [navigate, token]);
-
-  return null;
+  if (!token) return <Navigate to="/admin/login" replace />;
+  return children;
 };

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { apiUrl } from '@/services/api';
+import { useStoreSettings, isInsideDhaka } from '@/hooks/useStoreSettings';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Full name is required'),
@@ -27,10 +28,27 @@ export const Checkout = () => {
   const [processing, setProcessing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(null);
 
-  const deliveryCharge = 80;
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: { paymentMethod: 'cod', terms: false },
+  });
+
+  const paymentMethod = useWatch({ control, name: 'paymentMethod' });
+  const district = useWatch({ control, name: 'district' });
+  const settings = useStoreSettings();
+
+  // Delivery charge follows Admin -> Settings: Dhaka vs. outside Dhaka.
+  const deliveryCharge = isInsideDhaka(district) ? settings.deliveryChargeInsideDhaka : settings.deliveryChargeOutsideDhaka;
   const subtotal = getSubtotal();
   const total = subtotal + deliveryCharge;
 
+  // These early returns must stay AFTER all hooks above. Returning before useForm
+  // made React throw "rendered fewer hooks" the moment an order was placed.
   if (getItemCount() === 0) {
     window.location.href = '/cart';
     return null;
@@ -55,17 +73,6 @@ export const Checkout = () => {
     );
   }
 
-  const {
-    control,
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(checkoutSchema),
-    defaultValues: { paymentMethod: 'cod', terms: false },
-  });
-
-  const paymentMethod = useWatch({ control, name: 'paymentMethod' });
 
   const onSubmit = (data) => {
     setProcessing(true);

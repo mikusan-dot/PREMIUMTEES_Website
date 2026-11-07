@@ -73,9 +73,26 @@ export const adminController = {
 
   create: async (req, res) => {
     try {
-      const { email, role } = req.body;
-      const doc = await db.collection(COLLECTIONS.ADMINS).add({ email, role, createdAt: new Date().toISOString() });
-      await logAction({ adminId: req.admin.uid, adminName: req.admin.email, action: 'admin_created', target: `admins/${doc.id}`, details: { email, role } });
+      const { email, password, role } = req.validated;
+      const normalizedEmail = email.trim().toLowerCase();
+
+      if (process.env.DEV_MODE !== 'true') {
+        // Make sure the person can actually sign in: create the Firebase Auth user
+        // if it does not exist yet (needs a password), otherwise reuse it.
+        const auth = getAuth();
+        try {
+          await auth.getUserByEmail(normalizedEmail);
+        } catch (lookupErr) {
+          if (lookupErr.code !== 'auth/user-not-found') throw lookupErr;
+          if (!password) return res.status(400).json({ error: 'No Firebase account exists for this email yet. Enter a password (min 6 characters) to create one.' });
+          await auth.createUser({ email: normalizedEmail, password });
+        }
+        const existing = await db.collection(COLLECTIONS.ADMINS).where('email', '==', normalizedEmail).limit(1).get();
+        if (!existing.empty) return res.status(409).json({ error: 'This email is already an admin' });
+      }
+
+      const doc = await db.collection(COLLECTIONS.ADMINS).add({ email: normalizedEmail, role, createdAt: new Date().toISOString() });
+      await logAction({ adminId: req.admin.uid, adminName: req.admin.email, action: 'admin_created', target: `admins/${doc.id}`, details: { email: normalizedEmail, role } });
       res.status(201).json({ id: doc.id, message: 'Admin created' });
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -84,7 +101,9 @@ export const adminController = {
 
   update: async (req, res) => {
     try {
-      await db.collection(COLLECTIONS.ADMINS).doc(req.params.id).set(req.body, { merge: true });
+      const { role } = req.validated;
+      await db.collection(COLLECTIONS.ADMINS).doc(req.params.id).set({ role, updatedAt: new Date().toISOString() }, { merge: true });
+      await logAction({ adminId: req.admin.uid, adminName: req.admin.email, action: 'admin_role_changed', target: `admins/${req.params.id}`, details: { role } });
       res.json({ message: 'Admin updated' });
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -93,8 +112,14 @@ export const adminController = {
 
   delete: async (req, res) => {
     try {
-      await db.collection(COLLECTIONS.ADMINS).doc(req.params.id).delete();
-      res.json({ message: 'Admin deleted' });
+      const ref = db.collection(COLLECTIONS.ADMINS).doc(req.params.id);
+      const snap = await ref.get();
+      if (snap.exists && snap.data().email === req.admin.email) {
+        return res.status(400).json({ error: 'You cannot remove your own admin access' });
+      }
+      await ref.delete();
+      await logAction({ adminId: req.admin.uid, adminName: req.admin.email, action: 'admin_removed', target: `admins/${req.params.id}` });
+      res.json({ message: 'Admin access removed' });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

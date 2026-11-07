@@ -1,13 +1,13 @@
 import { Outlet } from 'react-router-dom';
-import { Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Ticket, CreditCard, Users, BarChart3, Settings, LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Package, ShoppingCart, Ticket, Tags, CreditCard, Users, BarChart3, Settings, LogOut } from 'lucide-react';
 
 const ADMIN_LINKS = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-  { name: 'Categories', href: '/admin/categories', icon: Ticket },
-  { name: 'Coupons', href: '/admin/coupons', icon: CreditCard },
+  { name: 'Categories', href: '/admin/categories', icon: Tags },
+  { name: 'Coupons', href: '/admin/coupons', icon: Ticket },
   { name: 'Payments', href: '/admin/payments', icon: CreditCard },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
@@ -16,6 +16,7 @@ const ADMIN_LINKS = [
 
 export const AdminLayout = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -28,21 +29,22 @@ export const AdminLayout = () => {
         <div className="mt-6 space-y-1 px-3">
           {ADMIN_LINKS.map((link) => {
             const Icon = link.icon;
+            const active = pathname === link.href || (link.href === '/admin/dashboard' && pathname === '/admin');
             return (
-              <button
+              <Link
                 key={link.name}
-                onClick={() => navigate(link.href)}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                to={link.href}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
               >
                 <Icon className="h-5 w-5" />
                 {link.name}
-              </button>
+              </Link>
             );
           })}
         </div>
         <div className="absolute bottom-0 w-full border-t border-gray-200 p-4">
           <button
-            onClick={() => { localStorage.removeItem('pt_admin_token'); navigate('/admin/login'); }}
+            onClick={() => { localStorage.removeItem('pt_admin_token'); localStorage.removeItem('pt_admin_user'); navigate('/admin/login'); }}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
           >
             <LogOut className="h-5 w-5" />

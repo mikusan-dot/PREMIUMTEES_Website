@@ -4,24 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/input';
 
-export const AdminDashboard = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-black mb-8">Dashboard</h1>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {[['Total Revenue', '৳1,24,500', 'trending-up'], ['Total Orders', '128', 'shopping-cart'], ['Pending Orders', '14', 'clock'], ['Total Products', '56', 'package']].map(([title, value, icon]) => (
-        <div key={title} className="bg-white border border-gray-200 rounded-2xl p-6">
-          <div className="text-gray-500 text-sm uppercase tracking-wider font-semibold mb-2">{title}</div>
-          <div className="text-2xl font-bold text-black">{value}</div>
-        </div>
-      ))}
-    </div>
-    <div className="mt-12 bg-white border border-gray-200 rounded-2xl p-6">
-      <h2 className="text-lg font-bold text-black mb-4">Recent Orders</h2>
-      <p className="text-gray-500 text-sm">Order management coming in Phase 4.</p>
-    </div>
-  </div>
-);
-
 export const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -42,8 +24,11 @@ export const AdminProducts = () => {
   });
   const [message, setMessage] = useState(null);
 
+  const [categories, setCategories] = useState([]);
+
   useEffect(() => {
     fetchProducts();
+    api.get('/admin/categories').then((res) => setCategories(res.data.categories || [])).catch(() => {});
   }, []);
 
   const fetchProducts = async () => {
@@ -72,6 +57,28 @@ export const AdminProducts = () => {
       setMessage({ type: 'error', text: `Image upload failed: ${err.response?.data?.error || err.message}` });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDelete = async (p) => {
+    if (!window.confirm(`Delete "${p.name}"? This cannot be undone. (Use Archive to just hide it from the store.)`)) return;
+    try {
+      await api.delete(`/admin/products/${p.id}`);
+      setMessage({ type: 'success', text: 'Product deleted' });
+      fetchProducts();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.response?.data?.error || 'Failed to delete product' });
+    }
+  };
+
+  const toggleStatus = async (p) => {
+    try {
+      const { id, createdAt, updatedAt, ...rest } = p;
+      await api.put(`/admin/products/${p.id}`, { ...rest, status: p.status === 'active' ? 'archived' : 'active' });
+      setMessage({ type: 'success', text: p.status === 'active' ? 'Product archived (hidden from the store)' : 'Product is live again' });
+      fetchProducts();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.response?.data?.error || 'Failed to update product' });
     }
   };
 
@@ -180,8 +187,26 @@ export const AdminProducts = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Categories (comma separated)</Label>
-              <Input value={form.categoryIds.join(', ')} onChange={(e) => handleChange('categoryIds', e.target.value.split(',').map(s => s.trim()).filter(Boolean))} placeholder="t-shirts, cotton, new-arrival" />
+              <Label>Categories</Label>
+              {categories.length === 0 ? (
+                <p className="text-sm text-gray-500">No categories yet. Create some on the Categories page first.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((c) => {
+                    const on = form.categoryIds.includes(c.slug);
+                    return (
+                      <button
+                        type="button"
+                        key={c.id}
+                        onClick={() => handleChange('categoryIds', on ? form.categoryIds.filter((x) => x !== c.slug) : [...form.categoryIds, c.slug])}
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-gray-700 hover:border-black'}`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="border-t pt-4">
@@ -234,6 +259,8 @@ export const AdminProducts = () => {
                       <div className="text-xs text-gray-500">SKU: {p.sku} · ৳{p.price}</div>
                     </div>
                     <span className={`text-xs font-medium ${p.status === 'active' ? 'text-green-600' : 'text-gray-500'}`}>{p.status}</span>
+                    <Button type="button" size="sm" variant="outline" onClick={() => toggleStatus(p)}>{p.status === 'active' ? 'Archive' : 'Restore'}</Button>
+                    <Button type="button" size="sm" variant="destructive" onClick={() => handleDelete(p)}>Delete</Button>
                   </div>
                 ))}
               </div>
@@ -245,51 +272,11 @@ export const AdminProducts = () => {
   );
 };
 
-export const AdminOrders = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-black mb-8">Order Management</h1>
-    <p className="text-gray-500 text-sm">Order processing coming in Phase 4.</p>
-  </div>
-);
-
-export const AdminCategories = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-black mb-8">Category Management</h1>
-    <p className="text-gray-500 text-sm">Category CRUD coming in Phase 4.</p>
-  </div>
-);
-
-export const AdminCoupons = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-black mb-8">Coupon Management</h1>
-    <p className="text-gray-500 text-sm">Coupon system coming in Phase 5.</p>
-  </div>
-);
-
-export const AdminPayments = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-black mb-8">Payment Management</h1>
-    <p className="text-gray-500 text-sm">Payment records coming in Phase 5.</p>
-  </div>
-);
-
-export const AdminUsers = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-black mb-8">Admin Users</h1>
-    <p className="text-gray-500 text-sm">Role & permission management coming in Phase 4.</p>
-  </div>
-);
-
-export const AdminReports = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-black mb-8">Reports & Analytics</h1>
-    <p className="text-gray-500 text-sm">Recharts analytics coming in Phase 5.</p>
-  </div>
-);
-
-export const AdminSettings = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-black mb-8">Website Settings</h1>
-    <p className="text-gray-500 text-sm">Brand identity & content management coming in Phase 5.</p>
-  </div>
-);
+export { AdminDashboard } from './Dashboard';
+export { AdminOrders } from './Orders';
+export { AdminCategories } from './Categories';
+export { AdminCoupons } from './Coupons';
+export { AdminPayments } from './Payments';
+export { AdminUsers } from './Users';
+export { AdminReports } from './Reports';
+export { AdminSettings } from './Settings';

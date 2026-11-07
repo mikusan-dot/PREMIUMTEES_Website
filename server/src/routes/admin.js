@@ -10,7 +10,7 @@ import {
 } from '../controllers/admin.js';
 import { uploadController } from '../controllers/uploadController.js';
 import { validate } from '../validators/index.js';
-import { productSchema, orderSchema, couponSchema, categorySchema, settingsSchema, authLoginSchema } from '../validators/index.js';
+import { productSchema, couponSchema, categorySchema, settingsSchema, adminUserSchema, adminRoleSchema } from '../validators/index.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
@@ -34,6 +34,8 @@ router.delete('/products/:id', authenticateAdmin, authorize('super_admin', 'prod
 // Categories
 router.get('/categories', authenticateAdmin, authorize('super_admin', 'product_manager', 'viewer'), categoryController.adminList);
 router.post('/categories', authenticateAdmin, authorize('super_admin', 'product_manager'), validate(categorySchema), categoryController.create);
+router.put('/categories/:id', authenticateAdmin, authorize('super_admin', 'product_manager'), validate(categorySchema), categoryController.update);
+router.delete('/categories/:id', authenticateAdmin, authorize('super_admin', 'product_manager'), categoryController.delete);
 
 // Orders
 router.get('/orders', authenticateAdmin, authorize('super_admin', 'order_manager', 'viewer'), orderController.adminList);
@@ -41,14 +43,21 @@ router.put('/orders/:id/status', authenticateAdmin, authorize('super_admin', 'or
 
 // Coupons
 router.get('/coupons', authenticateAdmin, authorize('super_admin', 'marketing_manager', 'viewer'), couponController.adminList);
+router.post('/coupons', authenticateAdmin, authorize('super_admin', 'marketing_manager'), validate(couponSchema), couponController.create);
+router.put('/coupons/:id', authenticateAdmin, authorize('super_admin', 'marketing_manager'), validate(couponSchema), couponController.update);
+router.delete('/coupons/:id', authenticateAdmin, authorize('super_admin', 'marketing_manager'), couponController.delete);
+
+// Settings
+router.get('/settings', authenticateAdmin, authorize('super_admin', 'marketing_manager', 'viewer'), settingsController.adminGet);
+router.put('/settings', authenticateAdmin, authorize('super_admin'), validate(settingsSchema), settingsController.adminUpdate);
 
 // Payments
-router.get('/payments', authenticateAdmin, authorize('super_admin', 'viewer'), paymentController.adminList);
+router.get('/payments', authenticateAdmin, authorize('super_admin', 'order_manager', 'viewer'), paymentController.adminList);
 
 // Users (admins)
 router.get('/users', authenticateAdmin, authorize('super_admin'), adminController.list);
-router.post('/users', authenticateAdmin, authorize('super_admin'), adminController.create);
-router.put('/users/:id', authenticateAdmin, authorize('super_admin'), adminController.update);
+router.post('/users', authenticateAdmin, authorize('super_admin'), validate(adminUserSchema), adminController.create);
+router.put('/users/:id', authenticateAdmin, authorize('super_admin'), validate(adminRoleSchema), adminController.update);
 router.delete('/users/:id', authenticateAdmin, authorize('super_admin'), adminController.delete);
 
 // Reports

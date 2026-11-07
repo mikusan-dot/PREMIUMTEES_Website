@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/layouts/Layout';
 import { Home } from '@/pages/Home';
@@ -21,11 +22,13 @@ import {
   AdminCategories,
   AdminSettings,
   AdminCoupons,
-  AdminReports,
   AdminUsers,
   AdminPayments,
 } from '@/admin/pages';
-import { requireAdmin } from '@/admin/auth/requireAdmin';
+import { RequireAdmin } from '@/admin/auth/requireAdmin';
+
+// Reports pulls in the charting library, so only load it when that page is opened.
+const AdminReports = lazy(() => import('@/admin/pages/Reports').then((m) => ({ default: m.AdminReports })));
 
 const App = () => (
   <BrowserRouter>
@@ -50,10 +53,9 @@ const App = () => (
       <Route
         path="/admin/*"
         element={
-          <>
-            <requireAdmin />
+          <RequireAdmin>
             <AdminLayout />
-          </>
+          </RequireAdmin>
         }
       >
         <Route index element={<AdminDashboard />} />
@@ -64,7 +66,7 @@ const App = () => (
         <Route path="coupons" element={<AdminCoupons />} />
         <Route path="payments" element={<AdminPayments />} />
         <Route path="users" element={<AdminUsers />} />
-        <Route path="reports" element={<AdminReports />} />
+        <Route path="reports" element={<Suspense fallback={<div className="p-8 text-sm text-gray-500">Loading...</div>}><AdminReports /></Suspense>} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
 

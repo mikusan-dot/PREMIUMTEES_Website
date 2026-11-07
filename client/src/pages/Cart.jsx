@@ -1,8 +1,10 @@
 import { useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 export const Cart = () => {
+  const settings = useStoreSettings(); // keep hooks above any early return
   const { items, removeItem, updateQuantity, getSubtotal, getItemCount, clearCart } = useCartStore();
 
   if (getItemCount() === 0) {
@@ -22,7 +24,7 @@ export const Cart = () => {
   }
 
   const subtotal = getSubtotal();
-  const deliveryCharge = 80;
+  const deliveryCharge = settings.deliveryChargeInsideDhaka; // exact charge is set at checkout from the district
   const total = subtotal + deliveryCharge;
 
   return (

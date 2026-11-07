@@ -25,7 +25,14 @@ export const authController = {
       });
       const fbJson = await fbRes.json();
       if (!fbRes.ok) {
-        return res.status(401).json({ error: 'Invalid email or password' });
+        const code = String(fbJson?.error?.message || 'UNKNOWN');
+        console.error('[admin login] Firebase sign-in failed:', code);
+        const badCredentials = ['EMAIL_NOT_FOUND', 'INVALID_PASSWORD', 'INVALID_LOGIN_CREDENTIALS'];
+        if (badCredentials.includes(code)) {
+          return res.status(401).json({ error: 'Invalid email or password' });
+        }
+        // Configuration problems (bad API key, provider disabled, disabled user...)
+        return res.status(502).json({ error: `Firebase sign-in error: ${code}` });
       }
       const decoded = await getAuth().verifyIdToken(fbJson.idToken);
       let role = decoded.role;

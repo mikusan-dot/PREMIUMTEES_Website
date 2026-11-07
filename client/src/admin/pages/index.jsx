@@ -69,7 +69,7 @@ export const AdminProducts = () => {
       setForm((prev) => ({ ...prev, images: [...prev.images, res.data.url] }));
       setMessage({ type: 'success', text: 'Image uploaded' });
     } catch (err) {
-      setMessage({ type: 'error', text: 'Image upload failed' });
+      setMessage({ type: 'error', text: `Image upload failed: ${err.response?.data?.error || err.message}` });
     } finally {
       setUploading(false);
     }

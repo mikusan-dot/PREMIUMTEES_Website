@@ -13,8 +13,10 @@ export const uploadToCloudinary = (buffer, folder = 'premium-tees/products') => 
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder,
-        resource_type: 'auto',
-        transformation: [{ width: 1000, height: 1000, crop: 'limit', quality: 'auto' }],
+        // Plain image upload: no incoming transformation and no 'auto' type, which
+        // some Cloudinary accounts block. Resize/optimise at delivery time instead
+        // (add /c_limit,w_1000,q_auto,f_auto/ to the image URL).
+        resource_type: 'image',
       },
       (error, result) => {
         if (error) reject(error);

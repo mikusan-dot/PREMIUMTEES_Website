@@ -1,4 +1,6 @@
 import { getAuth } from '../config/firebase.js';
+import { db } from '../services/db.js';
+import { COLLECTIONS } from '../services/firestoreService.js';
 
 // Verifies Firebase ID token sent in Authorization: Bearer <token> header.
 // Attaches decoded admin claims (uid, email, role) to req.admin.
@@ -24,10 +26,18 @@ export const authenticateAdmin = async (req, res, next) => {
       decoded = await auth.verifyIdToken(idToken);
     }
 
+    // Firebase ID tokens only carry a role if a custom claim was set. Otherwise
+    // fall back to the role stored in the Firestore `admins` collection.
+    let role = decoded.role;
+    if (!role && process.env.DEV_MODE !== 'true' && decoded.email) {
+      const snap = await db.collection(COLLECTIONS.ADMINS).where('email', '==', decoded.email).limit(1).get();
+      if (!snap.empty) role = snap.docs[0].data().role;
+    }
+
     req.admin = {
       uid: decoded.uid,
       email: decoded.email,
-      role: decoded.role || 'viewer',
+      role: role || 'viewer',
     };
     next();
   } catch (err) {

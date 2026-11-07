@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
@@ -52,10 +52,33 @@ const demoProducts = [
 ];
 
 const CATEGORIES = [
-  'Oversized T-shirts', 'Regular Fit T-shirts', 'Drop Shoulder T-shirts', 'Graphic T-shirts',
-  'Plain T-shirts', 'Polo T-shirts', "Men's Collection", "Women's Collection", 'Unisex Collection',
-  'Couple T-shirts', 'Limited Edition', 'Seasonal Collections', 'Sale Collection',
+  { name: 'Oversized T-shirts', slug: 'oversized-t-shirts' },
+  { name: 'Regular Fit T-shirts', slug: 'regular-fit-t-shirts' },
+  { name: 'Drop Shoulder T-shirts', slug: 'drop-shoulder-t-shirts' },
+  { name: 'Graphic T-shirts', slug: 'graphic-t-shirts' },
+  { name: 'Plain T-shirts', slug: 'plain-t-shirts' },
+  { name: 'Polo T-shirts', slug: 'polo-t-shirts' },
+  { name: "Men's Collection", slug: 'mens-collection' },
+  { name: "Women's Collection", slug: 'womens-collection' },
+  { name: 'Unisex Collection', slug: 'unisex-collection' },
+  { name: 'Couple T-shirts', slug: 'couple-t-shirts' },
+  { name: 'Limited Edition', slug: 'limited-edition' },
+  { name: 'Seasonal Collections', slug: 'seasonal-collections' },
+  { name: 'Sale Collection', slug: 'sale-collection' },
 ];
+
+const slugify = (value) =>
+  String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+const effectivePrice = (product) => {
+  const price = Number(product.price) || 0;
+  const sale = Number(product.salePrice) || 0;
+  return sale > 0 && sale < price ? sale : price;
+};
 
 export const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -66,11 +89,23 @@ export const Shop = () => {
     else next.delete('q');
     setSearchParams(next, { replace: true });
   };
-  const [category, setCategory] = useState('All');
+  const [category, setCategory] = useState(() => searchParams.get('category') || 'All');
   const [sort, setSort] = useState('featured');
   const [priceRange, setPriceRange] = useState('all');
   const { addItem } = useCartStore();
   const { add } = useWishlistStore();
+
+  useEffect(() => {
+    setCategory(searchParams.get('category') || 'All');
+  }, [searchParams]);
+
+  const selectCategory = (nextCategory) => {
+    setCategory(nextCategory);
+    const next = new URLSearchParams(searchParams);
+    if (nextCategory === 'All') next.delete('category');
+    else next.set('category', nextCategory);
+    setSearchParams(next, { replace: true });
+  };
 
   const handleAdd = (product) => {
     if (!isProductInStock(product)) return;
@@ -86,14 +121,26 @@ export const Shop = () => {
   });
 
   const query = search.trim().toLowerCase();
+  const selectedCategory = slugify(category);
   const filtered = products.filter((p) => {
-    const matchSearch = !query || [p.name, p.sku].filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
-    const matchCat = category === 'All' || p.category === category;
-    return matchSearch && matchCat;
+    const matchSearch =
+      !query ||
+      [p.name, p.sku, p.fit, p.fabric, p.category, ...(p.categoryIds || [])]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    const productCategories = [p.category, ...(p.categoryIds || [])].filter(Boolean).map(slugify);
+    const matchCat = category === 'All' || productCategories.includes(selectedCategory);
+    const price = effectivePrice(p);
+    const matchPrice =
+      priceRange === 'all' ||
+      (priceRange === '0-1000' && price <= 1000) ||
+      (priceRange === '1000-1500' && price > 1000 && price <= 1500) ||
+      (priceRange === '1500+' && price > 1500);
+    return matchSearch && matchCat && matchPrice;
   }).sort((a, b) => {
-    if (sort === 'priceAsc') return a.price - b.price;
-    if (sort === 'priceDesc') return b.price - a.price;
-    if (sort === 'newest') return 0;
+    if (sort === 'priceAsc') return effectivePrice(a) - effectivePrice(b);
+    if (sort === 'priceDesc') return effectivePrice(b) - effectivePrice(a);
+    if (sort === 'newest') return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
     return 0;
   });
 
@@ -123,12 +170,12 @@ export const Shop = () => {
             <div>
               <h3 className="font-bold text-brand-black mb-4">Category</h3>
               <div className="space-y-2">
-                <Button variant={category === 'All' ? 'default' : 'ghost'} size="sm" className="w-full text-left justify-start" onClick={() => setCategory('All')}>
+                <Button variant={category === 'All' ? 'default' : 'ghost'} size="sm" className="w-full text-left justify-start" onClick={() => selectCategory('All')}>
                   All Categories
                 </Button>
                 {CATEGORIES.map((c) => (
-                  <Button key={c} variant={category === c ? 'default' : 'ghost'} size="sm" className="w-full text-left justify-start" onClick={() => setCategory(c)}>
-                    {c}
+                  <Button key={c.slug} variant={category === c.slug ? 'default' : 'ghost'} size="sm" className="w-full text-left justify-start" onClick={() => selectCategory(c.slug)}>
+                    {c.name}
                   </Button>
                 ))}
               </div>
@@ -158,7 +205,9 @@ export const Shop = () => {
           {/* Product grid */}
           <div className="lg:col-span-9">
             <div className="flex justify-between items-end mb-6">
-              <p className="text-brand-muted text-sm">{filtered.length} results</p>
+              <p className="text-brand-muted text-sm">
+                {filtered.length} {filtered.length === 1 ? 'result' : 'results'}
+              </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filtered.length === 0 ? (

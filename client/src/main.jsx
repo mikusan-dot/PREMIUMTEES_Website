@@ -5,12 +5,6 @@ import './styles/globals.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/context/ThemeContext';
 
-// Mount test to confirm React runs
-document.getElementById('root')?.insertAdjacentHTML(
-  'afterbegin',
-  '<div id="mount-test" style="padding:2rem;background:#fee2e2;color:#991b1b;border:2px solid #dc2626;border-radius:8px;font-family:system-ui">React mounted OK</div>',
-);
-
 class ErrorBoundary extends React.Component {
   state = { hasError: false, error: null };
   static getDerivedStateFromError(error) {

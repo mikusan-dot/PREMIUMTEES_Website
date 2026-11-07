@@ -79,6 +79,12 @@ export const settingsSchema = z.object({
   deliveryChargeInsideDhaka: z.number().nonnegative().default(80),
   deliveryChargeOutsideDhaka: z.number().nonnegative().default(150),
   taxPercent: z.number().nonnegative().default(0),
+  instagramUrl: z.union([z.string().url(), z.literal('')]).default(''),
+  instagramImages: z.array(z.string().url()).default([]),
+});
+
+export const newsletterSchema = z.object({
+  email: z.string().trim().email(),
 });
 
 export const ADMIN_ROLES = ['super_admin', 'product_manager', 'order_manager', 'marketing_manager', 'viewer'];

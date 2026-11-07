@@ -1,163 +1,261 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Heart, Search, Menu, X, User, ShieldCheck } from 'lucide-react';
+import { Heart, Menu, Moon, Search, ShoppingCart, Sun, X } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useTheme } from '@/context/ThemeContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const NAV_LINKS = [
   { name: 'Home', href: '/' },
   { name: 'Shop', href: '/shop' },
-  { name: 'Categories', href: '/categories' },
   { name: 'New Arrivals', href: '/new-arrivals' },
   { name: 'Best Sellers', href: '/best-sellers' },
-  { name: 'About Us', href: '/about' },
+  { name: 'Categories', href: '/categories' },
+  { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
 ];
 
+const CountBadge = ({ count }) =>
+  count > 0 ? (
+    <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-black px-1 text-[9px] font-bold leading-none text-white">
+      {count > 99 ? '99+' : count}
+    </span>
+  ) : null;
+
 export const Header = () => {
-  const { items, getItemCount } = useCartStore();
-  const { toggle } = useTheme();
+  const { getItemCount } = useCartStore();
+  const { ids: wishlistIds } = useWishlistStore();
+  const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [query, setQuery] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef(null);
 
   const cartCount = getItemCount();
+  const wishlistCount = wishlistIds.length;
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const q = query.trim();
-    navigate(q ? `/shop?q=${encodeURIComponent(q)}` : '/shop');
+  useEffect(() => {
+    setMobileOpen(false);
+    setSearchOpen(false);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    if (searchOpen) searchRef.current?.focus();
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (!mobileOpen && !searchOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+        setSearchOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mobileOpen, searchOpen]);
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const value = query.trim();
+    navigate(value ? `/shop?q=${encodeURIComponent(value)}` : '/shop');
+    setSearchOpen(false);
+    setMobileOpen(false);
   };
+
+  const toggleSearch = () => {
+    setSearchOpen((open) => !open);
+    setMobileOpen(false);
+  };
+
+  const toggleMenu = () => {
+    setMobileOpen((open) => !open);
+    setSearchOpen(false);
+  };
+
+  const isActive = (href) => (href === '/' ? location.pathname === '/' : location.pathname.startsWith(href));
 
   return (
     <>
-      <div className="sticky top-0 z-40 border-b border-brand-border bg-white/80 backdrop-blur-md">
-        <div className="container-premium flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 md:py-6">
-          <Link to="/" className="font-serif text-2xl font-bold text-brand-black tracking-tighter">
-            PREMIUM<span className="text-brand-accent">TEES</span>
-          </Link>
+      {location.pathname === '/' && (
+        <div className="bg-brand-black px-4 py-2 text-center text-[9px] font-medium uppercase tracking-[0.14em] text-white sm:text-[10px] sm:tracking-[0.18em]">
+          <span className="sm:hidden">Free Dhaka delivery over ৳2,000 · COD</span>
+          <span className="hidden sm:inline">
+            Free delivery inside Dhaka on orders over ৳2,000 &nbsp;·&nbsp; Cash on delivery nationwide
+          </span>
+        </div>
+      )}
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-brand-charcoal">
-            {NAV_LINKS.map((link) => (
-              <Link key={link.name} to={link.href} className={cnNav(link.href === location.pathname ? 'text-brand-accent' : '')}>
-                {link.name}
-              </Link>
-            ))}
-          </div>
+      <header className="sticky top-0 z-40 border-b border-brand-border bg-white/95 backdrop-blur-md">
+      <div className="container-premium flex h-16 items-center justify-between gap-3 sm:h-20">
+        <Link
+          to="/"
+          className="shrink-0 whitespace-nowrap font-serif text-2xl font-bold leading-none tracking-[-0.045em] text-brand-black sm:text-3xl lg:text-[2rem] xl:text-4xl"
+          aria-label="Premium Tees home"
+        >
+          PREMIUM<span className="text-brand-accent">TEES</span>
+        </Link>
 
-          <div className="flex items-center gap-4">
-            <button onClick={toggle} className="p-2 text-brand-charcoal hover:bg-brand-offwhite rounded-full transition-colors">
-              {themeIcon()}
-            </button>
-            <button className="p-2 text-brand-charcoal hover:bg-brand-offwhite rounded-full relative transition-colors">
-              <Heart className="h-5 w-5" />
-              <span className="absolute top-1 right-1 flex h-1.5 w-1.5 rounded-full bg-brand-accent" />
-            </button>
-            <button
-              onClick={() => navigate('/cart')}
-              className="relative p-2 text-brand-charcoal hover:bg-brand-offwhite rounded-full transition-colors"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-black text-white text-[10px] font-bold px-1.5">
-                  {cartCount}
-                </span>
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-8" aria-label="Primary navigation">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.name}
+              to={link.href}
+              className={cn(
+                'group relative whitespace-nowrap py-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors xl:text-[11px] xl:tracking-[0.18em]',
+                isActive(link.href) ? 'text-brand-black' : 'text-brand-charcoal/65 hover:text-brand-black',
               )}
-            </button>
-            <button className="md:hidden p-2 text-brand-charcoal hover:bg-brand-offwhite rounded-full transition-colors">
-              <Menu className="h-5 w-5" />
-            </button>
-          </div>
+            >
+              {link.name}
+              <span
+                className={cn(
+                  'absolute inset-x-0 -bottom-0.5 h-px origin-left bg-brand-black transition-transform duration-300',
+                  isActive(link.href) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
+                )}
+              />
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1.5">
+          <button
+            type="button"
+            onClick={toggleSearch}
+            aria-label="Search products"
+            aria-expanded={searchOpen}
+            className="hidden rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite sm:inline-flex"
+          >
+            <Search className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            className="hidden rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite md:inline-flex"
+          >
+            {theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/wishlist')}
+            aria-label={`Wishlist${wishlistCount > 0 ? ` (${wishlistCount} items)` : ''}`}
+            className="relative rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite"
+          >
+            <Heart className="h-5 w-5" />
+            <CountBadge count={wishlistCount} />
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/cart')}
+            aria-label={`Shopping cart${cartCount > 0 ? ` (${cartCount} items)` : ''}`}
+            className="relative rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            <CountBadge count={cartCount} />
+          </button>
+          <button
+            type="button"
+            onClick={toggleMenu}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
+            className="relative rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite lg:hidden"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
 
-      <div className="hidden md:flex justify-center border-b border-brand-border/50 bg-white py-3">
-        <form onSubmit={handleSearch} className="container-premium flex items-center w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Input
-            type="search"
-            placeholder="Search products, SKU..."
-            className="w-full max-w-md"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <Button type="submit" variant="outline" size="sm" className="ml-2 hidden lg:flex gap-2">
-            <Search className="h-4 w-4" />
-            <span>Search</span>
-          </Button>
-        </form>
-      </div>
+      {searchOpen && (
+        <div className="absolute inset-x-0 top-full border-b border-brand-border bg-white shadow-[0_18px_30px_-25px_rgba(10,10,10,0.5)]">
+          <form onSubmit={handleSearch} className="container-premium flex items-center gap-3 py-3.5">
+            <Search className="h-4 w-4 shrink-0 text-brand-muted" />
+            <label htmlFor="header-search" className="sr-only">Search products</label>
+            <input
+              id="header-search"
+              ref={searchRef}
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search products, SKU, or fit..."
+              className="h-9 min-w-0 flex-1 bg-transparent text-sm text-brand-charcoal placeholder:text-brand-muted focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="shrink-0 bg-brand-black px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-brand-charcoal"
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              onClick={() => setSearchOpen(false)}
+              aria-label="Close search"
+              className="rounded-full p-2 text-brand-muted transition-colors hover:bg-brand-offwhite hover:text-brand-black"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </form>
+        </div>
+      )}
+
+      {mobileOpen && (
+        <div id="mobile-navigation" className="absolute inset-x-0 top-full max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-brand-border bg-white shadow-[0_24px_40px_-30px_rgba(10,10,10,0.6)] lg:hidden">
+          <div className="container-premium py-5">
+            <form onSubmit={handleSearch} className="mb-5 flex items-center gap-2 border border-brand-border px-3">
+              <Search className="h-4 w-4 shrink-0 text-brand-muted" />
+              <label htmlFor="mobile-search" className="sr-only">Search products</label>
+              <input
+                id="mobile-search"
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search products..."
+                className="h-11 min-w-0 flex-1 bg-transparent text-sm focus:outline-none"
+              />
+              <button type="submit" aria-label="Submit search" className="p-1.5 text-brand-black">
+                <Search className="h-4 w-4" />
+              </button>
+            </form>
+
+            <nav aria-label="Mobile navigation">
+              <ul className="divide-y divide-brand-border/70 border-y border-brand-border/70">
+                {NAV_LINKS.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      to={link.href}
+                      className={cn(
+                        'flex items-center justify-between py-3.5 text-xs font-semibold uppercase tracking-[0.18em]',
+                        isActive(link.href) ? 'text-brand-black' : 'text-brand-charcoal/70',
+                      )}
+                    >
+                      {link.name}
+                      <span className="text-brand-muted">→</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="mt-5 flex items-center justify-between">
+              <Link to="/wishlist" className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-charcoal">
+                Wishlist ({wishlistCount})
+              </Link>
+              <button
+                type="button"
+                onClick={toggle}
+                className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-charcoal"
+              >
+                {theme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                {theme === 'dark' ? 'Dark' : 'Light'} mode
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      </header>
     </>
   );
 };
-
-function cnNav(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
-
-function themeIcon() {
-  return <Sun className="h-5 w-5" />;
-}
-
-function Sun() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-  );
-}
-
-export const Footer = () => (
-  <footer className="bg-brand-black text-brand-offwhite border-t border-white/10">
-    <div className="container-premium py-20 md:py-32 px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-        <div className="col-span-1 md:col-span-2">
-          <Link to="/" className="font-serif text-2xl font-bold text-white tracking-tighter mb-4 inline-block">
-            PREMIUM<span className="text-brand-accent">TEES</span>
-          </Link>
-          <p className="text-sm text-gray-400 max-w-sm leading-relaxed">
-            Minimalist premium T-shirts crafted for Bangladesh. Quality fabric, timeless fit.
-          </p>
-        </div>
-        <div>
-          <h4 className="text-white font-semibold mb-6">Shop</h4>
-          <ul className="space-y-3 text-sm text-gray-400">
-            {NAV_LINKS.map((l) => (
-              <li key={l.name}><Link to={l.href} className="hover:text-white transition-colors">{l.name}</Link></li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-white font-semibold mb-6">Support</h4>
-          <ul className="space-y-3 text-sm text-gray-400">
-            <li><a href="mailto:support@premiumtees.com" className="hover:text-white transition-colors">support@premiumtees.com</a></li>
-            <li><a href="tel:+8801700000000" className="hover:text-white transition-colors">+880 1700 000000</a></li>
-            <li><a href="/contact" className="hover:text-white transition-colors">Contact Us</a></li>
-            <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-white font-semibold mb-6">Newsletter</h4>
-          <p className="text-sm text-gray-400 mb-4">Subscribe for updates and new arrivals.</p>
-          <form className="flex flex-col sm:flex-row gap-2" onSubmit={(e) => e.preventDefault()}>
-            <Input type="email" placeholder="Enter your email" className="flex-1" />
-            <Button variant="outline" size="sm">Subscribe</Button>
-          </form>
-          <div className="mt-6 flex gap-4">
-            <a href="#" className="text-gray-400 hover:text-white"><User className="h-5 w-5" /></a>
-            <a href="#" className="text-gray-400 hover:text-white"><ShieldCheck className="h-5 w-5" /></a>
-          </div>
-        </div>
-      </div>
-      <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-        <div>© {new Date().getFullYear()} Premium Tees. All rights reserved.</div>
-        <div className="flex gap-6 text-sm">
-          <a href="/about" className="hover:text-white">Privacy Policy</a>
-          <a href="/about" className="hover:text-white">Return &amp; Refund</a>
-          <a href="/about" className="hover:text-white">Terms &amp; Conditions</a>
-        </div>
-      </div>
-    </div>
-  </footer>
-);

@@ -7,6 +7,7 @@ import { ProductDetail } from '@/pages/ProductDetail';
 import { NewArrivals } from '@/pages/NewArrivals';
 import { BestSellers } from '@/pages/BestSellers';
 import { Cart } from '@/pages/Cart';
+import { Wishlist } from '@/pages/Wishlist';
 import { Checkout } from '@/pages/Checkout';
 import { OrderTracking } from '@/pages/OrderTracking';
 import { Categories } from '@/pages/Categories';
@@ -41,6 +42,7 @@ const App = () => (
         <Route path="best-sellers" element={<BestSellers />} />
         <Route path="categories" element={<Categories />} />
         <Route path="product/:slug" element={<ProductDetail />} />
+        <Route path="wishlist" element={<Wishlist />} />
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="track" element={<OrderTracking />} />

@@ -12,6 +12,8 @@ const COLLECTIONS = {
   ADMIN_LOGS: 'admin_activity_logs',
   INVENTORY_LOGS: 'inventory_logs',
   CUSTOMERS: 'customers',
+  REVIEWS: 'reviews',
+  NEWSLETTER: 'newsletter_subscribers',
 };
 
 export const generateOrderId = () => `PT-${Date.now().toString(36).toUpperCase()}-${nanoid(4).toUpperCase()}`;
@@ -456,6 +458,8 @@ const withDefaults = (settings) => ({
   deliveryChargeInsideDhaka: settings.deliveryChargeInsideDhaka ?? 80,
   deliveryChargeOutsideDhaka: settings.deliveryChargeOutsideDhaka ?? 150,
   taxPercent: settings.taxPercent ?? 0,
+  instagramUrl: settings.instagramUrl || '',
+  instagramImages: Array.isArray(settings.instagramImages) ? settings.instagramImages : [],
 });
 
 export const settingsController = {
@@ -481,6 +485,57 @@ export const settingsController = {
       await db.collection(COLLECTIONS.SETTINGS).doc(SETTINGS_DOC).set({ ...data, updatedAt: new Date().toISOString() }, { merge: true });
       await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'settings_updated', target: `settings/${SETTINGS_DOC}`, details: data });
       res.json({ message: 'Settings saved', settings: withDefaults(data) });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+};
+
+// ---------- Reviews ----------
+export const reviewController = {
+  list: async (req, res) => {
+    try {
+      const limit = Math.min(Math.max(Number(req.query.limit) || 6, 1), 24);
+      let reviews = [];
+      if (process.env.DEV_MODE === 'true') {
+        const snap = await db.collection(COLLECTIONS.REVIEWS).query((d) => d.isApproved === true);
+        reviews = snap.map((d) => d.data());
+      } else {
+        const snap = await db.collection(COLLECTIONS.REVIEWS)
+          .where('isApproved', '==', true)
+          .limit(50)
+          .get();
+        reviews = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      }
+      reviews.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+      res.json({ reviews: reviews.slice(0, limit) });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+};
+
+// ---------- Newsletter ----------
+export const newsletterController = {
+  subscribe: async (req, res) => {
+    try {
+      const email = req.validated.email.toLowerCase();
+      let existing = false;
+      if (process.env.DEV_MODE === 'true') {
+        const snap = await db.collection(COLLECTIONS.NEWSLETTER).query((d) => d.email === email);
+        existing = snap.length > 0;
+      } else {
+        const snap = await db.collection(COLLECTIONS.NEWSLETTER).where('email', '==', email).limit(1).get();
+        existing = !snap.empty;
+      }
+      if (!existing) {
+        await db.collection(COLLECTIONS.NEWSLETTER).add({
+          email,
+          source: 'homepage',
+          createdAt: new Date().toISOString(),
+        });
+      }
+      res.status(201).json({ message: 'You are on the list.' });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

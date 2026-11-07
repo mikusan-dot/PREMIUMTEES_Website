@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import {
   productController, orderController, couponController, settingsController,
-  categoryController, paymentController,
+  categoryController, paymentController, reviewController, newsletterController,
 } from '../services/firestoreService.js';
 import { validate } from '../validators/index.js';
-import { productSchema, orderSchema } from '../validators/index.js';
+import { newsletterSchema, orderSchema } from '../validators/index.js';
 
 const router = Router();
 
@@ -17,6 +17,12 @@ router.get('/categories', categoryController.list);
 
 // Public settings
 router.get('/settings/public', settingsController.getPublic);
+
+// Genuine, admin-approved customer reviews only
+router.get('/reviews', reviewController.list);
+
+// Newsletter subscription
+router.post('/newsletter', validate(newsletterSchema), newsletterController.subscribe);
 
 // Public orders
 router.post('/orders', validate(orderSchema), orderController.create);

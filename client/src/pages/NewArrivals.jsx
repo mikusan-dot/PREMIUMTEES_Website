@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useCartStore } from '@/store/cartStore';
+import { isProductInStock, toCartItem } from '@/lib/product';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -30,6 +31,11 @@ const demoProducts = [
 
 export const NewArrivals = () => {
   const { addItem } = useCartStore();
+
+  const handleAdd = (product) => {
+    if (!isProductInStock(product)) return;
+    addItem(toCartItem(product));
+  };
 
   const { data: products = demoProducts } = useQuery({
     queryKey: ['new-arrivals'],
@@ -65,7 +71,7 @@ export const NewArrivals = () => {
                 <div className="relative h-64 rounded-xl overflow-hidden mb-4 group-hover:border-brand-accent transition-colors border border-brand-border">
                   <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   {p.badge && <Badge variant="sale" className="absolute top-3 left-3">{p.badge}</Badge>}
-                  {!p.inStock && <Badge variant="out-of-stock" className="absolute top-3 left-3">Out of Stock</Badge>}
+                  {!isProductInStock(p) && <Badge variant="out-of-stock" className="absolute top-3 left-3">Out of Stock</Badge>}
                 </div>
                 <h3 className="font-bold text-brand-black mb-1">{p.name}</h3>
                 <p className="text-xs text-brand-muted mb-3">{p.category}</p>
@@ -73,7 +79,7 @@ export const NewArrivals = () => {
                   <span className="font-bold">{p.salePrice ? `৳${p.salePrice}` : `৳${p.price}`}</span>
                   {p.salePrice && <span className="text-xs text-brand-muted line-through">৳{p.price}</span>}
                 </div>
-                <Button size="sm" variant="outline" className="w-full mt-3" disabled={!p.inStock} onClick={() => p.inStock && addItem({ ...p, variantId: `${p.sku}-${p.colors[0]}-${p.sizes[0]}` })}>
+                <Button size="sm" variant="outline" className="w-full mt-3" disabled={!isProductInStock(p)} onClick={(e) => { e.stopPropagation(); handleAdd(p); }}>
                   Add to Cart
                 </Button>
               </Card>

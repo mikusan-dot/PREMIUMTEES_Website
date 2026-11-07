@@ -16,7 +16,7 @@ export const AdminProducts = () => {
     description: '',
     price: '',
     images: [],
-    variants: [{ color: '', size: '', stock: '' }],
+    variants: [{ color: '', size: '', stock: '0' }],
     categoryIds: [],
     status: 'active',
     featured: false,
@@ -95,7 +95,7 @@ export const AdminProducts = () => {
   };
 
   const addVariant = () => {
-    setForm((prev) => ({ ...prev, variants: [...prev.variants, { color: '', size: '', stock: '' }] }));
+    setForm((prev) => ({ ...prev, variants: [...prev.variants, { color: '', size: '', stock: '0' }] }));
   };
 
   const removeVariant = (index) => {
@@ -108,23 +108,56 @@ export const AdminProducts = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setMessage(null);
+
+    const price = Number(form.price);
+    if (!form.name.trim() || !form.slug.trim() || !form.sku.trim()) {
+      setMessage({ type: 'error', text: 'Name, slug and SKU are required.' });
+      return;
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      setMessage({ type: 'error', text: 'Enter a valid price.' });
+      return;
+    }
+
+    const variants = form.variants
+      .map((v) => ({ color: v.color.trim(), size: v.size.trim(), stock: Number(v.stock) }))
+      .filter((v) => v.color || v.size || v.stock > 0);
+
+    if (variants.length === 0) {
+      setMessage({ type: 'error', text: 'Add at least one variant with a color and size.' });
+      return;
+    }
+    if (variants.some((v) => !v.color || !v.size || !Number.isFinite(v.stock) || v.stock < 0)) {
+      setMessage({ type: 'error', text: 'Every variant needs a color, a size and a stock of 0 or more.' });
+      return;
+    }
+
+    setLoading(true);
     try {
       const payload = {
         ...form,
-        price: Number(form.price),
-        variants: form.variants.map((v) => ({
-          sku: v.sku || `${form.sku}-${v.color}-${v.size}`,
+        name: form.name.trim(),
+        slug: form.slug.trim(),
+        sku: form.sku.trim(),
+        price,
+        variants: variants.map((v) => ({
+          sku: `${form.sku.trim()}-${v.color}-${v.size}`,
           color: v.color,
           size: v.size,
-          stock: Number(v.stock) || 0,
+          stock: v.stock,
         })),
         categoryIds: form.categoryIds.filter(Boolean),
       };
       await api.post('/admin/products', payload);
-      setMessage({ type: 'success', text: 'Product created' });
-      setForm({ name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [{ color: '', size: '', stock: '' }], categoryIds: [], status: 'active', featured: false, bestSeller: false });
+      const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
+      setMessage({
+        type: 'success',
+        text: totalStock > 0
+          ? 'Product created'
+          : 'Product created, but every variant has 0 stock, so it will show as Out of Stock until you add stock.',
+      });
+      setForm({ name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [{ color: '', size: '', stock: '0' }], categoryIds: [], status: 'active', featured: false, bestSeller: false });
       setImageUrl('');
       fetchProducts();
     } catch (err) {
@@ -215,7 +248,7 @@ export const AdminProducts = () => {
                 <div key={i} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3 border-b pb-2 last:border-0 last:pb-0">
                   <Input placeholder="Color" value={v.color} onChange={(e) => handleVariantChange(i, 'color', e.target.value)} />
                   <Input placeholder="Size" value={v.size} onChange={(e) => handleVariantChange(i, 'size', e.target.value)} />
-                  <Input type="number" placeholder="Stock" value={v.stock} onChange={(e) => handleVariantChange(i, 'stock', e.target.value)} />
+                  <Input type="number" min="0" placeholder="Stock" value={v.stock} onChange={(e) => handleVariantChange(i, 'stock', e.target.value)} />
                   <Button type="button" variant="outline" size="sm" onClick={() => removeVariant(i)} disabled={form.variants.length === 1}>Remove</Button>
                 </div>
               ))}

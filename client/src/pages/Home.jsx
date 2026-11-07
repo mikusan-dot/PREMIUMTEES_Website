@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
+import { isProductInStock, toCartItem } from '@/lib/product';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -118,6 +119,11 @@ export const Home = () => {
   const { addItem } = useCartStore();
   const { add } = useWishlistStore();
 
+  const handleAdd = (product) => {
+    if (!isProductInStock(product)) return;
+    addItem(toCartItem(product));
+  };
+
   const { data: products = demoProducts, isLoading } = useQuery({
     queryKey: ['featured-products'],
     queryFn: async () => {
@@ -207,7 +213,7 @@ export const Home = () => {
                   <span className="text-lg font-bold">{p.salePrice ? `৳${p.salePrice}` : `৳${p.price}`}</span>
                   {p.salePrice && <span className="text-sm text-gray-400 line-through">৳{p.price}</span>}
                 </div>
-                <Button size="sm" className="w-full mt-4" onClick={() => addItem({ ...p, variantId: `${p.sku}-${p.colors[0]}-${p.sizes[0]}` })}>
+                <Button size="sm" className="w-full mt-4" onClick={() => handleAdd(p)}>
                   Add to Cart
                 </Button>
               </Card>
@@ -224,7 +230,7 @@ export const Home = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {products.slice(3).map((p) => (
-              <ProductCard key={p.id} product={p} addItem={addItem} add={add} />
+              <ProductCard key={p.id} product={p} onAdd={handleAdd} add={add} />
             ))}
           </div>
         </div>
@@ -291,7 +297,7 @@ export const Home = () => {
   );
 };
 
-function ProductCard({ product, addItem, add }) {
+function ProductCard({ product, onAdd, add }) {
   return (
     <Card className="group cursor-pointer">
       <div className="relative h-64 rounded-xl overflow-hidden mb-4 group-hover:border-brand-accent transition-colors">
@@ -305,7 +311,7 @@ function ProductCard({ product, addItem, add }) {
       <p className="text-xs text-brand-muted mb-3">{product.category}</p>
       <div className="flex items-center justify-between">
         <span className="font-bold">{product.salePrice ? `৳${product.salePrice}` : `৳${product.price}`}</span>
-        <Button size="sm" variant="outline" onClick={() => addItem({ ...product, variantId: `${product.sku}-${product.colors[0]}-${product.sizes[0]}` })}>
+        <Button size="sm" variant="outline" onClick={() => onAdd(product)}>
           Add
         </Button>
       </div>

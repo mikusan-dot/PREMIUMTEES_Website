@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
+import { isProductInStock, toCartItem } from '@/lib/product';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -56,12 +58,24 @@ const CATEGORIES = [
 ];
 
 export const Shop = () => {
-  const [search, setSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = searchParams.get('q') || '';
+  const setSearch = (value) => {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set('q', value);
+    else next.delete('q');
+    setSearchParams(next, { replace: true });
+  };
   const [category, setCategory] = useState('All');
   const [sort, setSort] = useState('featured');
   const [priceRange, setPriceRange] = useState('all');
   const { addItem } = useCartStore();
   const { add } = useWishlistStore();
+
+  const handleAdd = (product) => {
+    if (!isProductInStock(product)) return;
+    addItem(toCartItem(product));
+  };
 
   const { data: products = demoProducts } = useQuery({
     queryKey: ['products'],
@@ -71,8 +85,9 @@ export const Shop = () => {
     },
   });
 
+  const query = search.trim().toLowerCase();
   const filtered = products.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = !query || [p.name, p.sku].filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
     const matchCat = category === 'All' || p.category === category;
     return matchSearch && matchCat;
   }).sort((a, b) => {
@@ -90,7 +105,7 @@ export const Shop = () => {
             <h1 className="text-4xl font-bold text-brand-black mb-2">Shop</h1>
             <p className="text-brand-muted">Discover our collections.</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <form onSubmit={(e) => e.preventDefault()} className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Input
               type="search"
               placeholder="Search products or SKU..."
@@ -98,8 +113,8 @@ export const Shop = () => {
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1 max-w-md sm:w-80"
             />
-            <Button onClick={() => {}}>Search</Button>
-          </div>
+            <Button type="submit">Search</Button>
+          </form>
         </div>
 
         <div className="grid lg:grid-cols-12 gap-12">
@@ -156,7 +171,7 @@ export const Shop = () => {
                     <div className="relative h-64 rounded-xl overflow-hidden mb-4 group-hover:border-brand-accent transition-colors border border-brand-border">
                       <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       {p.badge && <Badge variant="sale" className="absolute top-3 left-3">{p.badge}</Badge>}
-                      {!p.inStock && <Badge variant="out-of-stock" className="absolute top-3 left-3">Out of Stock</Badge>}
+                      {!isProductInStock(p) && <Badge variant="out-of-stock" className="absolute top-3 left-3">Out of Stock</Badge>}
                     </div>
                     <h3 className="font-bold text-brand-black mb-1">{p.name}</h3>
                     <p className="text-xs text-brand-muted mb-3">{p.category}</p>
@@ -164,7 +179,7 @@ export const Shop = () => {
                       <span className="font-bold">{p.salePrice ? `৳${p.salePrice}` : `৳${p.price}`}</span>
                       {p.salePrice && <span className="text-xs text-brand-muted line-through">৳{p.price}</span>}
                     </div>
-                    <Button size="sm" variant="outline" className="w-full mt-3" disabled={!p.inStock} onClick={() => p.inStock && addItem({ ...p, variantId: `${p.sku}-${p.colors[0]}-${p.sizes[0]}` })}>
+                    <Button size="sm" variant="outline" className="w-full mt-3" disabled={!isProductInStock(p)} onClick={(e) => { e.stopPropagation(); handleAdd(p); }}>
                       Add to Cart
                     </Button>
                   </Card>

@@ -11,14 +11,15 @@ export const useCartStore = create(
       deliveryCharge: 0,
 
       addItem: (item) => {
+        const productId = item.productId ?? item.id;
         const { items } = get();
         const existing = items.find(
-          (i) => i.productId === item.productId && i.variantId === item.variantId,
+          (i) => i.productId === productId && i.variantId === item.variantId,
         );
         if (existing) {
-          set({ items: items.map((i) => (i.productId === existing.productId && i.variantId === existing.variantId ? { ...i, quantity: i.quantity + 1 } : i)) });
+          set({ items: items.map((i) => (i.productId === existing.productId && i.variantId === existing.variantId ? { ...i, quantity: i.quantity + (item.quantity ?? 1) } : i)) });
         } else {
-          set({ items: [...items, { ...item, quantity: item.quantity ?? 1 }] });
+          set({ items: [...items, { ...item, productId, quantity: item.quantity ?? 1 }] });
         }
       },
 

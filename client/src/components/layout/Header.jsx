@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Search, Menu, X, User, ShieldCheck } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
@@ -22,8 +23,15 @@ export const Header = () => {
   const { toggle } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const [query, setQuery] = useState('');
 
   const cartCount = getItemCount();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const q = query.trim();
+    navigate(q ? `/shop?q=${encodeURIComponent(q)}` : '/shop');
+  };
 
   return (
     <>
@@ -68,17 +76,19 @@ export const Header = () => {
       </div>
 
       <div className="hidden md:flex justify-center border-b border-brand-border/50 bg-white py-3">
-        <div className="container-premium flex items-center w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <form onSubmit={handleSearch} className="container-premium flex items-center w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <Input
             type="search"
             placeholder="Search products, SKU..."
             className="w-full max-w-md"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
           />
-          <Button variant="outline" size="sm" className="ml-2 hidden lg:flex gap-2">
+          <Button type="submit" variant="outline" size="sm" className="ml-2 hidden lg:flex gap-2">
             <Search className="h-4 w-4" />
             <span>Search</span>
           </Button>
-        </div>
+        </form>
       </div>
     </>
   );

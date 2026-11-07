@@ -8,6 +8,6 @@ export const uploadController = {
       res.json({ url: result.secure_url, publicId: result.public_id });
     } catch (err) {
       res.status(500).json({ error: err.message });
-    },
+    }
   },
 };

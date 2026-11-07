@@ -1,3 +1,4 @@
+import { v2 as cloudinary } from 'cloudinary';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 
 export const uploadController = {
@@ -12,7 +13,16 @@ export const uploadController = {
       const hint = err.http_code === 403 || /status code - 40[13]/.test(err.message || '')
         ? ` (Cloudinary refused the request. Using cloud "${cloud}", API key ending ${(process.env.CLOUDINARY_API_KEY || '').trim().slice(-4) || 'MISSING'}, secret length ${(process.env.CLOUDINARY_API_SECRET || '').trim().length}. The key must be Active in Cloudinary and the secret must belong to that key.)`
         : '';
-      res.status(500).json({ error: `${err.message}${hint}` });
+      // Ask Cloudinary's Admin API why: its error bodies are readable JSON.
+      let diagnosis = '';
+      try {
+        await cloudinary.api.ping();
+        diagnosis = ' Diagnosis: credentials are valid for the Admin API, so the upload itself is being blocked (check Settings -> Upload / Security in Cloudinary).';
+      } catch (pingErr) {
+        const detail = pingErr?.error?.message || pingErr?.message || 'unknown';
+        diagnosis = ` Diagnosis from Cloudinary: ${detail}`;
+      }
+      res.status(500).json({ error: `${err.message}${hint}${diagnosis}` });
     }
   },
 };

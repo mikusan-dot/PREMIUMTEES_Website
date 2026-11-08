@@ -40,7 +40,7 @@ export const AdminLogin = () => {
       <Card className="w-full max-w-md p-8 shadow-xl">
         <div className="mb-8 text-center">
           <ShieldAlert className="mx-auto h-8 w-8 text-amber-600 mb-3" />
-          <h2 className="text-2xl font-bold text-black">Admin Sign In</h2>
+          <h2 className="text-2xl font-bold text-brand-black">Admin Sign In</h2>
           <p className="text-gray-600 text-sm">Premium Tees admin dashboard</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">

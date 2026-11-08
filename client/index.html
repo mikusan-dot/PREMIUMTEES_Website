@@ -4,8 +4,26 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="theme-color" content="#f7f5f1" />
     <meta name="description" content="Premium T-shirts & apparel. Minimalist fashion for Bangladesh." />
+    <script>
+      (function () {
+        var theme = 'light';
+        try {
+          var saved = localStorage.getItem('pt_theme');
+          if (saved === 'dark' || saved === 'light') theme = saved;
+          else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+        } catch (e) {
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+        }
+        var root = document.documentElement;
+        root.classList.toggle('dark', theme === 'dark');
+        root.style.colorScheme = theme;
+        root.style.backgroundColor = theme === 'dark' ? '#121212' : '#f7f5f1';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#121212' : '#f7f5f1');
+      })();
+    </script>
     <title>Premium Tees | Minimalist T-Shirt Brand</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

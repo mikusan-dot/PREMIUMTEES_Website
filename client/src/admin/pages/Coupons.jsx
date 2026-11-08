@@ -98,7 +98,7 @@ export const AdminCoupons = () => {
       <Notice message={message} />
       <div className="grid gap-6 lg:grid-cols-5">
         <Panel className="lg:col-span-2 h-fit">
-          <h2 className="mb-4 font-bold text-black">{editingId ? 'Edit coupon' : 'New coupon'}</h2>
+          <h2 className="mb-4 font-bold text-brand-black">{editingId ? 'Edit coupon' : 'New coupon'}</h2>
           <form onSubmit={submit} className="space-y-4">
             <Field label="Code (min 3 characters)"><Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="WELCOME10" required /></Field>
             <Field label="Type">
@@ -138,7 +138,7 @@ export const AdminCoupons = () => {
                 {!loading && coupons.length === 0 && <EmptyRow cols={6} text="No coupons yet." />}
                 {coupons.map((c) => (
                   <tr key={c.id} className="border-b border-gray-100 last:border-0">
-                    <td className="px-4 py-3 font-mono font-semibold text-black">{c.code}</td>
+                    <td className="px-4 py-3 font-mono font-semibold text-brand-black">{c.code}</td>
                     <td className="px-4 py-3">{describe(c)}{c.maxDiscount ? <div className="text-xs text-gray-500">up to {money(c.maxDiscount)}</div> : null}</td>
                     <td className="px-4 py-3">{c.minOrder ? money(c.minOrder) : '-'}</td>
                     <td className="px-4 py-3 text-gray-500">{c.expiryDate ? new Date(c.expiryDate).toLocaleDateString('en-GB') : 'Never'}</td>

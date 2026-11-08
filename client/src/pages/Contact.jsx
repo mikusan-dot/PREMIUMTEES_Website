@@ -35,7 +35,7 @@ export const Contact = () => (
             </div>
           </div>
         </div>
-        <div className="border border-brand-border rounded-2xl p-8 bg-white">
+        <div className="border border-brand-border rounded-2xl p-8 bg-brand-white">
           <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
             <div className="grid grid-cols-2 gap-5">
               <Input type="text" placeholder="Full name" />
@@ -45,7 +45,7 @@ export const Contact = () => (
             <textarea
               rows="5"
               placeholder="Your message"
-              className="block w-full rounded-md border border-brand-border bg-white px-4 py-2.5 text-brand-charcoal shadow-sm placeholder:text-brand-muted focus:border-brand-accent focus:ring-1 focus:ring-brand-accent focus:outline-none"
+              className="block w-full rounded-md border border-brand-border bg-brand-white px-4 py-2.5 text-brand-charcoal shadow-sm placeholder:text-brand-muted focus:border-brand-accent focus:ring-1 focus:ring-brand-accent focus:outline-none"
             />
             <Button type="submit" className="w-full">
               Send Message

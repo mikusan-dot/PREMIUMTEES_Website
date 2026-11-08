@@ -1,29 +1,71 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+const STORAGE_KEY = 'pt_theme';
 const ThemeContext = createContext(null);
 
+const systemTheme = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+const readSaved = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved === 'dark' || saved === 'light' ? saved : null;
+  } catch {
+    return null;
+  }
+};
+
+const applyTheme = (theme) => {
+  const root = document.documentElement;
+  root.classList.toggle('dark', theme === 'dark');
+  root.style.colorScheme = theme;
+  root.style.backgroundColor = theme === 'dark' ? '#121212' : '#f7f5f1';
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#121212' : '#f7f5f1');
+};
+
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pt_theme');
-      if (saved) return saved;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'light';
-  });
+  const [theme, setThemeState] = useState(() => readSaved() ?? systemTheme());
 
   useEffect(() => {
-    localStorage.setItem('pt_theme', theme);
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    applyTheme(theme);
   }, [theme]);
 
-  const toggle = () => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  // Follow the OS preference live, but only while the visitor has not chosen a theme themselves.
+  useEffect(() => {
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+    if (!media) return undefined;
+    const onChange = () => {
+      if (!readSaved()) setThemeState(media.matches ? 'dark' : 'light');
+    };
+    media.addEventListener?.('change', onChange);
+    return () => media.removeEventListener?.('change', onChange);
+  }, []);
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggle }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  // Keep several open tabs in sync.
+  useEffect(() => {
+    const onStorage = (event) => {
+      if (event.key === STORAGE_KEY && (event.newValue === 'dark' || event.newValue === 'light')) {
+        setThemeState(event.newValue);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  const setTheme = useCallback((next) => {
+    setThemeState(next);
+    try {
+      localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      /* storage unavailable (private mode) — theme still applies for this session */
+    }
+  }, []);
+
+  const toggle = useCallback(() => setTheme(theme === 'dark' ? 'light' : 'dark'), [theme, setTheme]);
+
+  const value = useMemo(() => ({ theme, isDark: theme === 'dark', setTheme, toggle }), [theme, setTheme, toggle]);
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 export const useTheme = () => {

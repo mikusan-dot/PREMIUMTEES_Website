@@ -55,7 +55,7 @@ export const Reviews = () => {
             return (
               <figure
                 key={review.id || `${getName(review)}-${index}`}
-                className="min-w-[85%] snap-start border border-brand-border bg-white p-6 sm:min-w-[60%] md:min-w-0"
+                className="min-w-[85%] snap-start border border-brand-border bg-brand-white p-6 sm:min-w-[60%] md:min-w-0"
               >
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <Stars rating={rating} />

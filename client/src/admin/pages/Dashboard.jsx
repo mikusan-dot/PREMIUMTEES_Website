@@ -33,13 +33,13 @@ export const AdminDashboard = () => {
             {cards.map(([title, value, hint]) => (
               <Panel key={title}>
                 <div className="mb-2 text-sm font-semibold uppercase tracking-wider text-gray-500">{title}</div>
-                <div className="text-2xl font-bold text-black">{value}</div>
+                <div className="text-2xl font-bold text-brand-black">{value}</div>
                 <div className="mt-1 text-xs text-gray-500">{hint}</div>
               </Panel>
             ))}
           </div>
           <Panel className="mt-10">
-            <h2 className="mb-4 text-lg font-bold text-black">Recent Orders</h2>
+            <h2 className="mb-4 text-lg font-bold text-brand-black">Recent Orders</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-gray-200 text-xs uppercase text-gray-500">
@@ -49,7 +49,7 @@ export const AdminDashboard = () => {
                   {(stats.recentOrders || []).length === 0 && <EmptyRow cols={5} text="No orders yet." />}
                   {(stats.recentOrders || []).map((o) => (
                     <tr key={o.id || o.orderId} className="border-b border-gray-100 last:border-0">
-                      <td className="px-4 py-3 font-medium text-black">{o.orderId}</td>
+                      <td className="px-4 py-3 font-medium text-brand-black">{o.orderId}</td>
                       <td className="px-4 py-3">{o.customer?.name}</td>
                       <td className="px-4 py-3">{money(o.total)}</td>
                       <td className="px-4 py-3"><StatusBadge value={o.orderStatus} /></td>

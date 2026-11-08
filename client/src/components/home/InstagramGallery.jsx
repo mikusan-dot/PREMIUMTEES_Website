@@ -18,7 +18,7 @@ export const InstagramGallery = ({ images = [], fallbackImages = [], url = '' })
   const href = url || FALLBACK_URL;
 
   return (
-    <section id="instagram" className="bg-white py-16 md:py-24">
+    <section id="instagram" className="bg-brand-white py-16 md:py-24">
       <div className="container-premium">
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -44,7 +44,7 @@ export const InstagramGallery = ({ images = [], fallbackImages = [], url = '' })
               target="_blank"
               rel="noreferrer"
               aria-label="View on Instagram"
-              className="group relative aspect-square overflow-hidden bg-white"
+              className="group relative aspect-square overflow-hidden bg-brand-white"
             >
               <img
                 src={src}
@@ -53,7 +53,7 @@ export const InstagramGallery = ({ images = [], fallbackImages = [], url = '' })
                 decoding="async"
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <span className="absolute inset-0 flex items-center justify-center bg-brand-black/0 text-white opacity-0 transition-all duration-300 group-hover:bg-brand-black/45 group-hover:opacity-100">
+              <span className="absolute inset-0 flex items-center justify-center bg-brand-night/0 text-white opacity-0 transition-all duration-300 group-hover:bg-brand-night/45 group-hover:opacity-100">
                 <Instagram className="h-6 w-6" />
               </span>
             </a>

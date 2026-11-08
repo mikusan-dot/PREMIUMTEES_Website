@@ -33,7 +33,7 @@ export const Newsletter = () => {
   };
 
   return (
-    <section id="newsletter" className="bg-brand-black py-20 text-white md:py-28">
+    <section id="newsletter" className="bg-brand-night py-20 text-white md:py-28">
       <div className="container-premium">
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-6">
@@ -65,7 +65,7 @@ export const Newsletter = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex h-12 items-center justify-center gap-2 bg-white px-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-black transition-colors hover:bg-brand-offwhite disabled:opacity-60"
+                  className="inline-flex h-12 items-center justify-center gap-2 bg-white px-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-night transition-colors hover:bg-white/85 disabled:opacity-60"
                 >
                   {isSubmitting ? 'Joining...' : 'Subscribe'}
                   {!isSubmitting && <ArrowRight className="h-4 w-4" />}

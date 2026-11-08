@@ -88,7 +88,7 @@ export const AdminSettings = () => {
 
             <div className="space-y-4 border-t border-gray-100 pt-5">
               <div>
-                <h3 className="text-base font-semibold text-black">Instagram gallery</h3>
+                <h3 className="text-base font-semibold text-brand-black">Instagram gallery</h3>
                 <p className="text-xs text-gray-500">Shown on the homepage. If no images are added, product photos are used instead.</p>
               </div>
               <Field label="Instagram profile URL">
@@ -101,7 +101,7 @@ export const AdminSettings = () => {
               </Field>
               <div>
                 <span className="mb-1.5 block text-sm font-medium text-gray-700">Gallery images</span>
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-black hover:bg-gray-50">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 bg-brand-white px-4 py-2.5 text-sm font-semibold text-brand-black hover:bg-gray-50">
                   <Upload className="h-4 w-4" />
                   {uploading ? 'Uploading...' : 'Upload images'}
                   <input
@@ -124,7 +124,7 @@ export const AdminSettings = () => {
                         type="button"
                         aria-label="Remove image"
                         onClick={() => removeGalleryImage(url)}
-                        className="absolute right-1.5 top-1.5 rounded-full bg-white/90 p-1.5 text-red-600 shadow-sm hover:bg-white"
+                        className="absolute right-1.5 top-1.5 rounded-full bg-brand-white/90 p-1.5 text-red-600 shadow-sm hover:bg-brand-white"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

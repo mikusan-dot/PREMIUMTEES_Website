@@ -2,54 +2,11 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { useCartStore } from '@/store/cartStore';
-import { useWishlistStore } from '@/store/wishlistStore';
-import { isProductInStock, toCartItem } from '@/lib/product';
+import { ProductCard } from '@/components/product/ProductCard';
+import { GridMessage, ProductGridSkeleton } from '@/components/product/ProductListingPage';
+import { dedupeProducts, isSaleActive } from '@/lib/badges';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-
-const PLACEHOLDER = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&h=600&fit=crop&q=80';
-
-const demoProducts = [
-  {
-    id: 'p1', name: 'Classic Oversized Tee', slug: 'classic-oversized-tee', sku: 'TEE-001',
-    price: 850, salePrice: 750, fit: 'Oversized', fabric: 'Cotton', gsm: 240,
-    category: 'Oversized T-shirts', images: [PLACEHOLDER], badge: 'NEW', inStock: true,
-    sizes: ['M', 'L', 'XL', 'XXL'], colors: ['Black', 'White', 'Charcoal'],
-  },
-  {
-    id: 'p2', name: 'Drop Shoulder Graphic Tee', slug: 'drop-shoulder-graphic-tee', sku: 'TEE-002',
-    price: 950, salePrice: null, fit: 'Drop Shoulder', fabric: 'Cotton Blend', gsm: 220,
-    category: 'Graphic T-shirts', images: ['https://images.unsplash.com/photo-1583743814966-49e1fc1c883f?w=600&h=600&fit=crop&q=80'], badge: 'BEST SELLER', inStock: true,
-    sizes: ['S', 'M', 'L', 'XL'], colors: ['Black', 'White'],
-  },
-  {
-    id: 'p3', name: 'Regular Fit Plain Tee', slug: 'regular-fit-plain-tee', sku: 'TEE-003',
-    price: 650, salePrice: 550, fit: 'Regular Fit', fabric: 'Cotton', gsm: 200,
-    category: 'Plain T-shirts', images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=600&fit=crop&q=80'], badge: 'SALE', inStock: true,
-    sizes: ['M', 'L', 'XL'], colors: ['White', 'Navy', 'Black'],
-  },
-  {
-    id: 'p4', name: 'Premium Polo Tee', slug: 'premium-polo-tee', sku: 'TEE-004',
-    price: 1100, salePrice: null, fit: 'Regular Fit', fabric: 'Pique Cotton', gsm: 240,
-    category: 'Polo T-shirts', images: ['https://images.unsplash.com/photo-1559885791-3d77f3d45b2c?w=600&h=600&fit=crop&q=80'], badge: null, inStock: true,
-    sizes: ['M', 'L', 'XL', 'XXL'], colors: ['Navy', 'White', 'Black'],
-  },
-  {
-    id: 'p5', name: 'Oversized Limited Edition Tee', slug: 'oversized-limited-edition-tee', sku: 'TEE-005',
-    price: 1400, salePrice: null, fit: 'Oversized', fabric: 'Heavyweight Cotton', gsm: 280,
-    category: 'Limited Edition', images: ['https://images.unsplash.com/photo-1602810388489-47791f8ba1b5?w=600&h=600&fit=crop&q=80'], badge: 'LIMITED EDITION', inStock: true,
-    sizes: ['M', 'L', 'XL'], colors: ['Black'],
-  },
-  {
-    id: 'p6', name: "Women's Cropped Tee", slug: 'womens-cropped-tee', sku: 'TEE-006',
-    price: 750, salePrice: 650, fit: 'Cropped', fabric: 'Cotton', gsm: 190,
-    category: "Women's Collection", images: ['https://images.unsplash.com/photo-1594634306853-a8c82c5b991c?w=600&h=600&fit=crop&q=80'], badge: 'NEW', inStock: true,
-    sizes: ['S', 'M', 'L'], colors: ['White', 'Black', 'Pink'],
-  },
-];
 
 const CATEGORIES = [
   { name: 'Oversized T-shirts', slug: 'oversized-t-shirts' },
@@ -76,8 +33,7 @@ const slugify = (value) =>
 
 const effectivePrice = (product) => {
   const price = Number(product.price) || 0;
-  const sale = Number(product.salePrice) || 0;
-  return sale > 0 && sale < price ? sale : price;
+  return isSaleActive(product) ? Number(product.salePrice) : price;
 };
 
 export const Shop = () => {
@@ -92,8 +48,6 @@ export const Shop = () => {
   const [category, setCategory] = useState(() => searchParams.get('category') || 'All');
   const [sort, setSort] = useState('featured');
   const [priceRange, setPriceRange] = useState('all');
-  const { addItem } = useCartStore();
-  const { add } = useWishlistStore();
 
   useEffect(() => {
     setCategory(searchParams.get('category') || 'All');
@@ -107,18 +61,11 @@ export const Shop = () => {
     setSearchParams(next, { replace: true });
   };
 
-  const handleAdd = (product) => {
-    if (!isProductInStock(product)) return;
-    addItem(toCartItem(product));
-  };
-
-  const { data: products = demoProducts } = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => {
-      const { data } = await api.get('/products');
-      return data.products;
-    },
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['products', 'all'],
+    queryFn: async () => (await api.get('/products', { params: { limit: 200 } })).data.products,
   });
+  const products = dedupeProducts(data || []);
 
   const query = search.trim().toLowerCase();
   const selectedCategory = slugify(category);
@@ -145,7 +92,7 @@ export const Shop = () => {
   });
 
   return (
-    <section className="section">
+    <section className="py-12 md:py-20">
       <div className="container-premium">
         <div className="flex flex-col lg:flex-row gap-6 mb-12 items-start lg:items-center">
           <div className="flex-1">
@@ -164,9 +111,9 @@ export const Shop = () => {
           </form>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-12">
+        <div className="grid gap-8 lg:grid-cols-12 lg:gap-12">
           {/* Filters sidebar */}
-          <div className="lg:col-span-3 space-y-8">
+          <div className="space-y-6 lg:col-span-3 lg:space-y-8">
             <div>
               <h3 className="font-bold text-brand-black mb-4">Category</h3>
               <div className="space-y-2">
@@ -209,32 +156,17 @@ export const Shop = () => {
                 {filtered.length} {filtered.length === 1 ? 'result' : 'results'}
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filtered.length === 0 ? (
-                <div className="col-span-full text-center py-20">
-                  <p className="text-brand-muted">No products found.</p>
-                </div>
-              ) : (
-                filtered.map((p) => (
-                  <Card key={p.id} className="group cursor-pointer" onClick={() => { window.location.href = `/product/${p.slug}`; }}>
-                    <div className="relative h-64 rounded-xl overflow-hidden mb-4 group-hover:border-brand-accent transition-colors border border-brand-border">
-                      <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      {p.badge && <Badge variant="sale" className="absolute top-3 left-3">{p.badge}</Badge>}
-                      {!isProductInStock(p) && <Badge variant="out-of-stock" className="absolute top-3 left-3">Out of Stock</Badge>}
-                    </div>
-                    <h3 className="font-bold text-brand-black mb-1">{p.name}</h3>
-                    <p className="text-xs text-brand-muted mb-3">{p.category}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">{p.salePrice ? `৳${p.salePrice}` : `৳${p.price}`}</span>
-                      {p.salePrice && <span className="text-xs text-brand-muted line-through">৳{p.price}</span>}
-                    </div>
-                    <Button size="sm" variant="outline" className="w-full mt-3" disabled={!isProductInStock(p)} onClick={(e) => { e.stopPropagation(); handleAdd(p); }}>
-                      Add to Cart
-                    </Button>
-                  </Card>
-                ))
-              )}
-            </div>
+            {isLoading ? (
+              <ProductGridSkeleton count={8} />
+            ) : isError ? (
+              <div className="grid"><GridMessage title="We couldn't load products." text="Check your connection and try again." action={<button type="button" onClick={() => refetch()} className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-black underline decoration-brand-accent decoration-2 underline-offset-4">Try again</button>} /></div>
+            ) : filtered.length === 0 ? (
+              <div className="grid"><GridMessage title="No products found." text="Try a different search, category or price range." /></div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-3">
+                {filtered.map((p) => <ProductCard key={p.id || p.slug} product={p} />)}
+              </div>
+            )}
           </div>
         </div>
       </div>

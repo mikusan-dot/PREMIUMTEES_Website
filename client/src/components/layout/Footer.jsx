@@ -25,7 +25,7 @@ export const Footer = () => {
   const instagram = settings.instagramUrl || 'https://www.instagram.com/';
 
   return (
-    <footer className="border-t border-white/10 bg-brand-black text-brand-offwhite">
+    <footer className="border-t border-white/10 bg-brand-night text-white">
       <div className="container-premium py-14 md:py-20">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4 lg:grid-cols-12 lg:gap-8">
           <div className="col-span-2 lg:col-span-4">

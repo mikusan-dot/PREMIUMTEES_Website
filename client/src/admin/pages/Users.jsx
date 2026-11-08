@@ -79,7 +79,7 @@ export const AdminUsers = () => {
       <Notice message={message} />
       <div className="grid gap-6 lg:grid-cols-5">
         <Panel className="lg:col-span-2 h-fit">
-          <h2 className="mb-4 font-bold text-black">Add an admin</h2>
+          <h2 className="mb-4 font-bold text-brand-black">Add an admin</h2>
           <form onSubmit={submit} className="space-y-4">
             <Field label="Email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="person@example.com" required /></Field>
             <Field label="Password (only for a new person)">
@@ -108,7 +108,7 @@ export const AdminUsers = () => {
                   const isMe = a.email === me.email;
                   return (
                     <tr key={a.id} className="border-b border-gray-100 last:border-0">
-                      <td className="px-4 py-3 font-medium text-black">{a.email}{isMe && <span className="ml-2 text-xs text-gray-500">(you)</span>}</td>
+                      <td className="px-4 py-3 font-medium text-brand-black">{a.email}{isMe && <span className="ml-2 text-xs text-gray-500">(you)</span>}</td>
                       <td className="px-4 py-3">
                         <select className={`${selectClass} w-auto`} value={a.role} disabled={isMe} onChange={(e) => changeRole(a, e.target.value)}>
                           {ROLES.map(([v]) => <option key={v} value={v}>{v.replace('_', ' ')}</option>)}

@@ -22,6 +22,10 @@ export const productSchema = z.object({
   status: z.enum(['active', 'archived']).default('active'),
   featured: z.boolean().default(false),
   bestSeller: z.boolean().default(false),
+  limitedEdition: z.boolean().default(false),
+  // Real campaign end dates (ISO). Countdown badges are only shown while these are in the future.
+  saleEndsAt: z.string().optional().nullable(),
+  limitedEndsAt: z.string().optional().nullable(),
 });
 
 export const orderSchema = z.object({

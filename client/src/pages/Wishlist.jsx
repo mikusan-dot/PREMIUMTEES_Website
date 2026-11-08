@@ -74,7 +74,7 @@ export const Wishlist = () => {
                       aria-label={`Remove ${product.name} from wishlist`}
                       title="Remove from wishlist"
                       onClick={(e) => { e.stopPropagation(); remove(product.id); }}
-                      className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
+                      className="absolute top-3 right-3 p-2 bg-brand-white/90 rounded-full hover:bg-brand-white transition-colors"
                     >
                       <X className="h-4 w-4 text-brand-black" />
                     </button>

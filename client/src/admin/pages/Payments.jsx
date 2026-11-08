@@ -51,13 +51,13 @@ export const AdminPayments = () => {
         <Panel><div className="text-sm font-semibold uppercase tracking-wider text-gray-500">Received</div><div className="mt-2 text-2xl font-bold text-green-700">{money(received)}</div></Panel>
         <Panel><div className="text-sm font-semibold uppercase tracking-wider text-gray-500">Outstanding</div><div className="mt-2 text-2xl font-bold text-amber-700">{money(outstanding)}</div></Panel>
         {Object.entries(byMethod).slice(0, 2).map(([m, v]) => (
-          <Panel key={m}><div className="text-sm font-semibold uppercase tracking-wider text-gray-500">{METHOD_LABEL[m] || m}</div><div className="mt-2 text-2xl font-bold text-black">{money(v)}</div></Panel>
+          <Panel key={m}><div className="text-sm font-semibold uppercase tracking-wider text-gray-500">{METHOD_LABEL[m] || m}</div><div className="mt-2 text-2xl font-bold text-brand-black">{money(v)}</div></Panel>
         ))}
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
         {['all', 'unpaid', 'pending', 'paid', 'failed', 'refunded'].map((s) => (
-          <button key={s} onClick={() => setFilter(s)} className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${filter === s ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-gray-700 hover:border-black'}`}>{s}</button>
+          <button key={s} onClick={() => setFilter(s)} className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${filter === s ? 'border-brand-black bg-brand-black text-brand-white' : 'border-gray-300 bg-brand-white text-gray-700 hover:border-brand-black'}`}>{s}</button>
         ))}
       </div>
 
@@ -72,7 +72,7 @@ export const AdminPayments = () => {
               {!loading && visible.length === 0 && <EmptyRow cols={7} text="No payments found." />}
               {visible.map((o) => (
                 <tr key={o.id || o.orderId} className="border-b border-gray-100 last:border-0">
-                  <td className="px-4 py-3 font-medium text-black">{o.orderId}</td>
+                  <td className="px-4 py-3 font-medium text-brand-black">{o.orderId}</td>
                   <td className="px-4 py-3">{o.customer?.name}</td>
                   <td className="px-4 py-3">{METHOD_LABEL[o.paymentMethod] || o.paymentMethod}</td>
                   <td className="px-4 py-3">{money(o.total)}</td>

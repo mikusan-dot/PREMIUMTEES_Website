@@ -20,9 +20,9 @@ export const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
-      <nav className="fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-200 bg-white">
+      <nav className="fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-200 bg-brand-white">
         <div className="h-16 border-b border-gray-200 flex items-center justify-center px-4">
-          <Link to="/admin/dashboard" className="font-serif text-xl font-bold text-black tracking-tighter">
+          <Link to="/admin/dashboard" className="font-serif text-xl font-bold text-brand-black tracking-tighter">
             ADMIN<span className="text-amber-600">TEES</span>
           </Link>
         </div>
@@ -34,7 +34,7 @@ export const AdminLayout = () => {
               <Link
                 key={link.name}
                 to={link.href}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${active ? 'bg-brand-black text-brand-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
               >
                 <Icon className="h-5 w-5" />
                 {link.name}

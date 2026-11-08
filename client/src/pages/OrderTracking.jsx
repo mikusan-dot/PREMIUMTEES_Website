@@ -80,7 +80,7 @@ export const OrderTracking = () => {
                       return (
                         <div key={s.key} className="flex gap-4">
                           <div className="relative z-10 flex w-8 h-8 items-center justify-center rounded-full border-4 transition-colors duration-500
-                            {completed ? 'bg-brand-black border-brand-black text-white' : 'bg-white border-brand-border text-brand-muted'}
+                            {completed ? 'bg-brand-black border-brand-black text-brand-white' : 'bg-brand-white border-brand-border text-brand-muted'}
                           ">
                             {completed ? '✓' : i === statuses.indexOf({ key: tracking.orderStatus }) ? '○' : ''}
                           </div>

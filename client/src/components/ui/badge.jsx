@@ -3,16 +3,16 @@ import { cn } from '@/lib/utils';
 
 export const Badge = forwardRef(({ className, variant = 'default', ...props }, ref) => {
   const variants = {
-    default: 'bg-brand-black text-white',
+    default: 'bg-brand-black text-brand-white',
     secondary: 'bg-brand-offwhite text-brand-charcoal',
     accent: 'bg-brand-accent text-white',
     outline: 'border border-brand-charcoal bg-transparent text-brand-charcoal',
     success: 'bg-green-100 text-green-800',
     warning: 'bg-amber-100 text-amber-800',
     danger: 'bg-red-100 text-red-800',
-    new: 'bg-brand-black text-white text-[10px] uppercase tracking-wider',
-    sale: 'bg-red-600 text-white text-[10px] uppercase tracking-wider',
-    'out-of-stock': 'bg-brand-charcoal text-white text-[10px] uppercase tracking-wider',
+    new: 'bg-brand-black text-brand-white text-[10px] uppercase tracking-wider',
+    sale: 'bg-[#dc2626] text-white text-[10px] uppercase tracking-wider',
+    'out-of-stock': 'bg-neutral-800 text-white text-[10px] uppercase tracking-wider',
   };
   return (
     <span

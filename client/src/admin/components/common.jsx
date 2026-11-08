@@ -17,7 +17,7 @@ export const slugify = (text) =>
 export const PageHeader = ({ title, subtitle, action }) => (
   <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
     <div>
-      <h1 className="text-3xl font-bold text-black">{title}</h1>
+      <h1 className="text-3xl font-bold text-brand-black">{title}</h1>
       {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
     </div>
     {action}
@@ -25,7 +25,7 @@ export const PageHeader = ({ title, subtitle, action }) => (
 );
 
 export const Panel = ({ className, children }) => (
-  <div className={cn('bg-white border border-gray-200 rounded-2xl p-6', className)}>{children}</div>
+  <div className={cn('bg-brand-white border border-gray-200 rounded-2xl p-6', className)}>{children}</div>
 );
 
 export const Notice = ({ message }) => {
@@ -66,7 +66,7 @@ export const Field = ({ label, children, className }) => (
   </label>
 );
 
-export const selectClass = 'w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black';
+export const selectClass = 'w-full rounded-md border border-gray-300 bg-brand-white px-3 py-2.5 text-sm text-brand-black focus:outline-none focus:ring-2 focus:ring-brand-black';
 
 export const EmptyRow = ({ cols, text = 'Nothing here yet.' }) => (
   <tr><td colSpan={cols} className="px-4 py-8 text-center text-sm text-gray-500">{text}</td></tr>

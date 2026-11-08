@@ -5,6 +5,97 @@
 @layer base {
   :root {
     --radius: 0.5rem;
+    --page: 247 245 241;
+    --surface: 255 255 255;
+    --ink: 10 10 10;
+    --body: 31 31 31;
+    --muted: 107 114 128;
+    --line: 229 229 229;
+    --accent: 180 83 9;
+    --accent-hover: 146 64 14;
+    --gray-50: 249 250 251;
+    --gray-100: 243 244 246;
+    --gray-200: 229 231 235;
+    --gray-300: 209 213 219;
+    --gray-400: 156 163 175;
+    --gray-500: 107 114 128;
+    --gray-600: 75 85 99;
+    --gray-700: 55 65 81;
+    --gray-900: 17 24 39;
+    --red-50: 254 242 242;
+    --red-100: 254 226 226;
+    --red-200: 254 202 202;
+    --red-300: 252 165 165;
+    --red-500: 239 68 68;
+    --red-600: 220 38 38;
+    --red-700: 185 28 28;
+    --red-800: 153 27 27;
+    --green-50: 240 253 244;
+    --green-100: 220 252 231;
+    --green-200: 187 247 208;
+    --green-600: 22 163 74;
+    --green-700: 21 128 61;
+    --green-800: 22 101 52;
+    --amber-50: 255 251 235;
+    --amber-100: 254 243 199;
+    --amber-600: 217 119 6;
+    --amber-700: 180 83 9;
+    --amber-800: 146 64 14;
+    --blue-50: 239 246 255;
+    --blue-700: 29 78 216;
+    --blue-900: 30 58 138;
+    --purple-50: 250 245 255;
+    --purple-700: 126 34 206;
+    --indigo-50: 238 242 255;
+    --indigo-700: 67 56 202;
+    color-scheme: light;
+  }
+
+  :root.dark {
+    --page: 18 18 18;
+    --surface: 28 28 28;
+    --ink: 245 245 244;
+    --body: 228 228 226;
+    --muted: 163 163 163;
+    --line: 56 56 56;
+    --accent: 217 119 6;
+    --accent-hover: 245 158 11;
+    --gray-50: 34 34 34;
+    --gray-100: 38 38 38;
+    --gray-200: 56 56 56;
+    --gray-300: 72 72 72;
+    --gray-400: 115 115 115;
+    --gray-500: 163 163 163;
+    --gray-600: 190 190 190;
+    --gray-700: 212 212 212;
+    --gray-900: 245 245 244;
+    --red-50: 60 22 22;
+    --red-100: 74 26 26;
+    --red-200: 127 42 42;
+    --red-300: 252 165 165;
+    --red-500: 248 113 113;
+    --red-600: 248 113 113;
+    --red-700: 252 165 165;
+    --red-800: 254 202 202;
+    --green-50: 20 50 32;
+    --green-100: 22 62 38;
+    --green-200: 34 96 58;
+    --green-600: 74 222 128;
+    --green-700: 134 239 172;
+    --green-800: 187 247 208;
+    --amber-50: 58 42 14;
+    --amber-100: 72 50 12;
+    --amber-600: 251 191 36;
+    --amber-700: 252 211 77;
+    --amber-800: 253 230 138;
+    --blue-50: 23 37 84;
+    --blue-700: 147 197 253;
+    --blue-900: 59 130 246;
+    --purple-50: 46 24 72;
+    --purple-700: 216 180 254;
+    --indigo-50: 32 30 80;
+    --indigo-700: 165 180 252;
+    color-scheme: dark;
   }
 
   html {
@@ -13,12 +104,12 @@
   }
 
   body {
-    @apply bg-brand-offwhite text-brand-charcoal antialiased selection:bg-brand-accent selection:text-white;
+    @apply bg-brand-offwhite text-brand-charcoal antialiased selection:bg-brand-accent selection:text-white transition-colors duration-200;
   }
 
   h1, h2, h3, h4, h5, h6, .font-serif {
     font-family: 'Playfair Display', ui-serif, Georgia, serif;
-    color: #0a0a0a;
+    color: rgb(var(--ink));
   }
 
   h1 { @apply text-5xl md:text-6xl font-bold leading-tight text-brand-black; }
@@ -46,7 +137,7 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-brand-charcoal rounded-full;
+    @apply bg-brand-muted/60 rounded-full;
   }
 
   @media (max-width: 640px) {
@@ -78,19 +169,19 @@
   }
 
   .btn {
-    @apply inline-flex items-center justify-center rounded-md px-5 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center rounded-md px-5 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-brand-offwhite disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-black {
-    @apply btn bg-brand-black text-white hover:bg-brand-charcoal focus:ring-brand-black;
+    @apply btn bg-brand-black text-brand-white hover:bg-brand-charcoal focus:ring-brand-black;
   }
 
   .btn-white {
-    @apply btn bg-white text-brand-black border border-brand-charcoal hover:bg-brand-charcoal hover:text-white focus:ring-brand-black;
+    @apply btn bg-brand-white text-brand-black border border-brand-charcoal hover:bg-brand-charcoal hover:text-brand-white focus:ring-brand-black;
   }
 
   .btn-outline {
-    @apply btn border border-brand-charcoal text-brand-black hover:bg-brand-black hover:text-white focus:ring-brand-black;
+    @apply btn border border-brand-charcoal text-brand-black hover:bg-brand-black hover:text-brand-white focus:ring-brand-black;
   }
 
   .btn-accent {
@@ -98,7 +189,7 @@
   }
 
   .input {
-    @apply block w-full rounded-md border border-brand-border bg-white px-4 py-2.5 text-brand-charcoal shadow-sm placeholder:text-brand-muted focus:border-brand-accent focus:ring-1 focus:ring-brand-accent focus:outline-none transition-all;
+    @apply block w-full rounded-md border border-brand-border bg-brand-white px-4 py-2.5 text-brand-charcoal shadow-sm placeholder:text-brand-muted focus:border-brand-accent focus:ring-1 focus:ring-brand-accent focus:outline-none transition-all;
   }
 
   .label {

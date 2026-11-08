@@ -4,11 +4,11 @@ import { cn } from '@/lib/utils';
 export const Button = forwardRef(({ className, variant = 'default', size = 'default', disabled, asChild = false, ...props }, ref) => {
   const Comp = asChild ? props.as || 'span' : 'button';
   const variants = {
-    default: 'bg-brand-black text-white hover:bg-brand-charcoal',
+    default: 'bg-brand-black text-brand-white hover:bg-brand-charcoal',
     accent: 'bg-brand-accent text-white hover:bg-brand-accentHover',
-    outline: 'border border-brand-charcoal bg-transparent text-brand-black hover:bg-brand-black hover:text-white',
+    outline: 'border border-brand-charcoal bg-transparent text-brand-black hover:bg-brand-black hover:text-brand-white',
     ghost: 'hover:bg-brand-offwhite text-brand-charcoal',
-    destructive: 'bg-red-600 text-white hover:bg-red-700',
+    destructive: 'bg-[#dc2626] text-white hover:bg-[#b91c1c]',
   };
   const sizes = {
     sm: 'px-3 py-1.5 text-xs',

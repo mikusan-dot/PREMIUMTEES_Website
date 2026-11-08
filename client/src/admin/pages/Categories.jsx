@@ -75,7 +75,7 @@ export const AdminCategories = () => {
       <Notice message={message} />
       <div className="grid gap-6 lg:grid-cols-5">
         <Panel className="lg:col-span-2 h-fit">
-          <h2 className="mb-4 font-bold text-black">{editingId ? 'Edit category' : 'New category'}</h2>
+          <h2 className="mb-4 font-bold text-brand-black">{editingId ? 'Edit category' : 'New category'}</h2>
           <form onSubmit={submit} className="space-y-4">
             <Field label="Name"><Input value={form.name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Oversized Tees" required /></Field>
             <Field label="Slug (used in the web address)"><Input value={form.slug} onChange={(e) => { setSlugTouched(true); setForm({ ...form, slug: slugify(e.target.value) }); }} placeholder="oversized-tees" required /></Field>
@@ -102,7 +102,7 @@ export const AdminCategories = () => {
                 {!loading && categories.length === 0 && <EmptyRow cols={5} text="No categories yet. Create your first one." />}
                 {categories.map((c) => (
                   <tr key={c.id} className="border-b border-gray-100 last:border-0">
-                    <td className="px-4 py-3 font-medium text-black">{c.name}</td>
+                    <td className="px-4 py-3 font-medium text-brand-black">{c.name}</td>
                     <td className="px-4 py-3 text-gray-500">{c.slug}</td>
                     <td className="px-4 py-3">{c.sortOrder ?? 0}</td>
                     <td className="px-4 py-3"><StatusBadge value={c.isActive === false ? 'inactive' : 'active'} /></td>

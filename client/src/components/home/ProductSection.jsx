@@ -4,7 +4,7 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { cn } from '@/lib/utils';
 
 const SkeletonCard = () => (
-  <div className="overflow-hidden rounded-lg border border-brand-border bg-white">
+  <div className="overflow-hidden rounded-lg border border-brand-border bg-brand-white">
     <div className="aspect-[4/5] animate-pulse bg-brand-offwhite" />
     <div className="space-y-3 p-5">
       <div className="h-4 w-3/4 animate-pulse rounded bg-brand-offwhite" />
@@ -67,7 +67,7 @@ export const ProductSection = ({
           ))}
         </div>
       ) : (
-        <div className="border border-dashed border-brand-border bg-white px-6 py-14 text-center">
+        <div className="border border-dashed border-brand-border bg-brand-white px-6 py-14 text-center">
           <p className="text-sm font-medium text-brand-black">New pieces are on the way.</p>
           <p className="mt-1 text-sm text-brand-muted">Check back soon or browse the full collection.</p>
           <Link

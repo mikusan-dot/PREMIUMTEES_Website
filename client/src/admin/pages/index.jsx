@@ -21,6 +21,10 @@ export const AdminProducts = () => {
     status: 'active',
     featured: false,
     bestSeller: false,
+    limitedEdition: false,
+    salePrice: '',
+    saleEndsAt: '',
+    limitedEndsAt: '',
   });
   const [message, setMessage] = useState(null);
 
@@ -111,12 +115,18 @@ export const AdminProducts = () => {
     setMessage(null);
 
     const price = Number(form.price);
+    const salePrice = form.salePrice === '' ? 0 : Number(form.salePrice);
     if (!form.name.trim() || !form.slug.trim() || !form.sku.trim()) {
       setMessage({ type: 'error', text: 'Name, slug and SKU are required.' });
       return;
     }
     if (!Number.isFinite(price) || price <= 0) {
       setMessage({ type: 'error', text: 'Enter a valid price.' });
+      return;
+    }
+
+    if (!Number.isFinite(salePrice) || salePrice < 0 || (salePrice > 0 && salePrice >= price)) {
+      setMessage({ type: 'error', text: 'Sale price must be lower than the regular price.' });
       return;
     }
 
@@ -141,6 +151,9 @@ export const AdminProducts = () => {
         slug: form.slug.trim(),
         sku: form.sku.trim(),
         price,
+        salePrice: salePrice > 0 ? salePrice : null,
+        saleEndsAt: salePrice > 0 && form.saleEndsAt ? new Date(form.saleEndsAt).toISOString() : null,
+        limitedEndsAt: form.limitedEdition && form.limitedEndsAt ? new Date(form.limitedEndsAt).toISOString() : null,
         variants: variants.map((v) => ({
           sku: `${form.sku.trim()}-${v.color}-${v.size}`,
           color: v.color,
@@ -157,7 +170,7 @@ export const AdminProducts = () => {
           ? 'Product created'
           : 'Product created, but every variant has 0 stock, so it will show as Out of Stock until you add stock.',
       });
-      setForm({ name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [{ color: '', size: '', stock: '0' }], categoryIds: [], status: 'active', featured: false, bestSeller: false });
+      setForm({ name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [{ color: '', size: '', stock: '0' }], categoryIds: [], status: 'active', featured: false, bestSeller: false, limitedEdition: false, salePrice: '', saleEndsAt: '', limitedEndsAt: '' });
       setImageUrl('');
       fetchProducts();
     } catch (err) {
@@ -171,7 +184,7 @@ export const AdminProducts = () => {
     <div className="p-8">
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-1/2 space-y-6">
-          <h1 className="text-3xl font-bold text-black">Product Management</h1>
+          <h1 className="text-3xl font-bold text-brand-black">Product Management</h1>
 
           {message && (
             <div className={`p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
@@ -179,7 +192,7 @@ export const AdminProducts = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="bg-brand-white border border-gray-200 rounded-2xl p-6 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label>Product Name</Label>
@@ -232,7 +245,7 @@ export const AdminProducts = () => {
                         type="button"
                         key={c.id}
                         onClick={() => handleChange('categoryIds', on ? form.categoryIds.filter((x) => x !== c.slug) : [...form.categoryIds, c.slug])}
-                        className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-gray-700 hover:border-black'}`}
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? 'border-brand-black bg-brand-black text-brand-white' : 'border-gray-300 bg-brand-white text-gray-700 hover:border-brand-black'}`}
                       >
                         {c.name}
                       </button>
@@ -243,7 +256,7 @@ export const AdminProducts = () => {
             </div>
 
             <div className="border-t pt-4">
-              <h3 className="font-bold text-black mb-4">Variants</h3>
+              <h3 className="font-bold text-brand-black mb-4">Variants</h3>
               {form.variants.map((v, i) => (
                 <div key={i} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3 border-b pb-2 last:border-0 last:pb-0">
                   <Input placeholder="Color" value={v.color} onChange={(e) => handleVariantChange(i, 'color', e.target.value)} />
@@ -254,6 +267,28 @@ export const AdminProducts = () => {
               ))}
               <Button type="button" variant="outline" size="sm" onClick={addVariant}>+ Add Variant</Button>
             </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label>Sale price (BDT, optional)</Label>
+                <Input type="number" value={form.salePrice} onChange={(e) => handleChange('salePrice', e.target.value)} placeholder="990" />
+              </div>
+              <div>
+                <Label>Sale ends (optional — shows a countdown)</Label>
+                <Input type="datetime-local" value={form.saleEndsAt} onChange={(e) => handleChange('saleEndsAt', e.target.value)} disabled={!form.salePrice} />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input type="checkbox" checked={form.limitedEdition} onChange={(e) => handleChange('limitedEdition', e.target.checked)} className="w-4 h-4" />
+              <label className="text-sm text-gray-600">Limited edition</label>
+            </div>
+            {form.limitedEdition && (
+              <div>
+                <Label>Limited edition ends (optional — shows a countdown)</Label>
+                <Input type="datetime-local" value={form.limitedEndsAt} onChange={(e) => handleChange('limitedEndsAt', e.target.value)} />
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               <input type="checkbox" checked={form.featured} onChange={(e) => handleChange('featured', e.target.checked)} className="w-4 h-4" />
@@ -271,15 +306,15 @@ export const AdminProducts = () => {
               </Label>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full bg-black text-white" loading={loading}>
+            <Button type="submit" disabled={loading} className="w-full bg-brand-black text-brand-white" loading={loading}>
               {loading ? 'Creating...' : 'Create Product'}
             </Button>
           </form>
         </div>
 
         <div className="lg:w-1/2">
-          <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h2 className="font-bold text-black mb-4">Existing Products ({products.length})</h2>
+          <div className="bg-brand-white border border-gray-200 rounded-2xl p-6">
+            <h2 className="font-bold text-brand-black mb-4">Existing Products ({products.length})</h2>
             {products.length === 0 ? (
               <p className="text-gray-500 text-sm">No products yet.</p>
             ) : (
@@ -288,7 +323,7 @@ export const AdminProducts = () => {
                   <div key={p.id} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
                     {p.images?.[0] && <img src={p.images[0]} alt="" className="w-12 h-12 object-cover rounded border" />}
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-black">{p.name}</div>
+                      <div className="text-sm font-medium text-brand-black">{p.name}</div>
                       <div className="text-xs text-gray-500">SKU: {p.sku} · ৳{p.price}</div>
                     </div>
                     <span className={`text-xs font-medium ${p.status === 'active' ? 'text-green-600' : 'text-gray-500'}`}>{p.status}</span>

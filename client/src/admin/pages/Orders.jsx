@@ -73,7 +73,7 @@ export const AdminOrders = () => {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${filter === s ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-gray-700 hover:border-black'}`}
+            className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${filter === s ? 'border-brand-black bg-brand-black text-brand-white' : 'border-gray-300 bg-brand-white text-gray-700 hover:border-brand-black'}`}
           >
             {s}{s === 'all' ? ` (${orders.length})` : counts[s] ? ` (${counts[s]})` : ''}
           </button>
@@ -97,7 +97,7 @@ export const AdminOrders = () => {
               {!loading && visible.length === 0 && <EmptyRow cols={7} text="No orders found." />}
               {visible.map((o) => (
                 <tr key={o.id || o.orderId} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-black">{o.orderId}</td>
+                  <td className="px-4 py-3 font-medium text-brand-black">{o.orderId}</td>
                   <td className="px-4 py-3">{o.customer?.name}<div className="text-xs text-gray-500">{o.customer?.phone}</div></td>
                   <td className="px-4 py-3">{money(o.total)}</td>
                   <td className="px-4 py-3"><span className="uppercase text-xs text-gray-600">{o.paymentMethod}</span> <StatusBadge value={o.paymentStatus} /></td>
@@ -115,7 +115,7 @@ export const AdminOrders = () => {
         {selected && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-black">Order {selected.orderId}</h2>
+              <h2 className="text-xl font-bold text-brand-black">Order {selected.orderId}</h2>
               <p className="text-sm text-gray-500">Placed {formatDate(selected.createdAt)}</p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 text-sm">
@@ -146,7 +146,7 @@ export const AdminOrders = () => {
               <div>Subtotal: {money(selected.subtotal)}</div>
               {selected.discount > 0 && <div>Discount: -{money(selected.discount)}</div>}
               <div>Delivery: {money(selected.deliveryCharge)}</div>
-              <div className="text-base font-bold text-black">Total: {money(selected.total)}</div>
+              <div className="text-base font-bold text-brand-black">Total: {money(selected.total)}</div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Order status">

@@ -18,7 +18,7 @@ const NAV_LINKS = [
 
 const CountBadge = ({ count }) =>
   count > 0 ? (
-    <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-black px-1 text-[9px] font-bold leading-none text-white">
+    <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-black px-1 text-[9px] font-bold leading-none text-brand-white">
       {count > 99 ? '99+' : count}
     </span>
   ) : null;
@@ -26,7 +26,7 @@ const CountBadge = ({ count }) =>
 export const Header = () => {
   const { getItemCount } = useCartStore();
   const { ids: wishlistIds } = useWishlistStore();
-  const { theme, toggle } = useTheme();
+  const { isDark, toggle } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [query, setQuery] = useState('');
@@ -81,7 +81,7 @@ export const Header = () => {
   return (
     <>
       {location.pathname === '/' && (
-        <div className="bg-brand-black px-4 py-2 text-center text-[9px] font-medium uppercase tracking-[0.14em] text-white sm:text-[10px] sm:tracking-[0.18em]">
+        <div className="bg-brand-night px-4 py-2 text-center text-[9px] font-medium uppercase tracking-[0.14em] text-white sm:text-[10px] sm:tracking-[0.18em]">
           <span className="sm:hidden">Free Dhaka delivery over ৳2,000 · COD</span>
           <span className="hidden sm:inline">
             Free delivery inside Dhaka on orders over ৳2,000 &nbsp;·&nbsp; Cash on delivery nationwide
@@ -89,11 +89,11 @@ export const Header = () => {
         </div>
       )}
 
-      <header className="sticky top-0 z-40 border-b border-brand-border bg-white/95 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-brand-border bg-brand-white/95 backdrop-blur-md">
       <div className="container-premium flex h-16 items-center justify-between gap-3 sm:h-20">
         <Link
           to="/"
-          className="shrink-0 whitespace-nowrap font-serif text-2xl font-bold leading-none tracking-[-0.045em] text-brand-black sm:text-3xl lg:text-[2rem] xl:text-4xl"
+          className="shrink-0 whitespace-nowrap font-serif text-[1.35rem] font-bold leading-none tracking-[-0.045em] text-brand-black sm:text-3xl lg:text-[2rem] xl:text-4xl"
           aria-label="Premium Tees home"
         >
           PREMIUM<span className="text-brand-accent">TEES</span>
@@ -120,29 +120,30 @@ export const Header = () => {
           ))}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1.5">
+        <div className="flex shrink-0 items-center gap-0 sm:gap-1.5">
           <button
             type="button"
             onClick={toggleSearch}
             aria-label="Search products"
             aria-expanded={searchOpen}
-            className="hidden rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite sm:inline-flex"
+            className="hidden h-11 w-11 items-center justify-center rounded-full text-brand-charcoal transition-colors hover:bg-brand-offwhite sm:inline-flex"
           >
             <Search className="h-5 w-5" />
           </button>
           <button
             type="button"
             onClick={toggle}
-            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            className="hidden rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite md:inline-flex"
+            aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+            title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-brand-charcoal transition-colors hover:bg-brand-offwhite active:bg-brand-border/60 sm:h-11 sm:w-11"
           >
-            {theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
           <button
             type="button"
             onClick={() => navigate('/wishlist')}
             aria-label={`Wishlist${wishlistCount > 0 ? ` (${wishlistCount} items)` : ''}`}
-            className="relative rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-brand-charcoal transition-colors hover:bg-brand-offwhite active:bg-brand-border/60 sm:h-11 sm:w-11"
           >
             <Heart className="h-5 w-5" />
             <CountBadge count={wishlistCount} />
@@ -151,7 +152,7 @@ export const Header = () => {
             type="button"
             onClick={() => navigate('/cart')}
             aria-label={`Shopping cart${cartCount > 0 ? ` (${cartCount} items)` : ''}`}
-            className="relative rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-brand-charcoal transition-colors hover:bg-brand-offwhite active:bg-brand-border/60 sm:h-11 sm:w-11"
           >
             <ShoppingCart className="h-5 w-5" />
             <CountBadge count={cartCount} />
@@ -162,7 +163,7 @@ export const Header = () => {
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
             aria-controls="mobile-navigation"
-            className="relative rounded-full p-2 text-brand-charcoal transition-colors hover:bg-brand-offwhite lg:hidden"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-brand-charcoal transition-colors hover:bg-brand-offwhite active:bg-brand-border/60 sm:h-11 sm:w-11 lg:hidden"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -170,7 +171,7 @@ export const Header = () => {
       </div>
 
       {searchOpen && (
-        <div className="absolute inset-x-0 top-full border-b border-brand-border bg-white shadow-[0_18px_30px_-25px_rgba(10,10,10,0.5)]">
+        <div className="absolute inset-x-0 top-full border-b border-brand-border bg-brand-white shadow-[0_18px_30px_-25px_rgba(10,10,10,0.5)]">
           <form onSubmit={handleSearch} className="container-premium flex items-center gap-3 py-3.5">
             <Search className="h-4 w-4 shrink-0 text-brand-muted" />
             <label htmlFor="header-search" className="sr-only">Search products</label>
@@ -185,7 +186,7 @@ export const Header = () => {
             />
             <button
               type="submit"
-              className="shrink-0 bg-brand-black px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-brand-charcoal"
+              className="shrink-0 bg-brand-black px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-white transition-colors hover:bg-brand-charcoal"
             >
               Search
             </button>
@@ -193,7 +194,7 @@ export const Header = () => {
               type="button"
               onClick={() => setSearchOpen(false)}
               aria-label="Close search"
-              className="rounded-full p-2 text-brand-muted transition-colors hover:bg-brand-offwhite hover:text-brand-black"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-brand-muted transition-colors hover:bg-brand-offwhite hover:text-brand-black"
             >
               <X className="h-4 w-4" />
             </button>
@@ -202,7 +203,7 @@ export const Header = () => {
       )}
 
       {mobileOpen && (
-        <div id="mobile-navigation" className="absolute inset-x-0 top-full max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-brand-border bg-white shadow-[0_24px_40px_-30px_rgba(10,10,10,0.6)] lg:hidden">
+        <div id="mobile-navigation" className="absolute inset-x-0 top-full max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-brand-border bg-brand-white shadow-[0_24px_40px_-30px_rgba(10,10,10,0.6)] lg:hidden">
           <div className="container-premium py-5">
             <form onSubmit={handleSearch} className="mb-5 flex items-center gap-2 border border-brand-border px-3">
               <Search className="h-4 w-4 shrink-0 text-brand-muted" />
@@ -215,7 +216,7 @@ export const Header = () => {
                 placeholder="Search products..."
                 className="h-11 min-w-0 flex-1 bg-transparent text-sm focus:outline-none"
               />
-              <button type="submit" aria-label="Submit search" className="p-1.5 text-brand-black">
+              <button type="submit" aria-label="Submit search" className="inline-flex h-11 w-11 items-center justify-center text-brand-black">
                 <Search className="h-4 w-4" />
               </button>
             </form>
@@ -240,16 +241,16 @@ export const Header = () => {
             </nav>
 
             <div className="mt-5 flex items-center justify-between">
-              <Link to="/wishlist" className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-charcoal">
+              <Link to="/wishlist" className="inline-flex min-h-[44px] items-center text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-charcoal">
                 Wishlist ({wishlistCount})
               </Link>
               <button
                 type="button"
                 onClick={toggle}
-                className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-charcoal"
+                className="inline-flex min-h-[44px] items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-charcoal"
               >
-                {theme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                {theme === 'dark' ? 'Dark' : 'Light'} mode
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDark ? 'Switch to light' : 'Switch to dark'}
               </button>
             </div>
           </div>

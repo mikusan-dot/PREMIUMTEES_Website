@@ -37,22 +37,48 @@ const logAction = async ({ adminId, adminName, action, target, details }) => {
 export const productController = {
   list: async (req, res) => {
     try {
-      const { featured, category, limit = 20, status = 'active' } = req.query;
+      const { featured, category, status = 'active' } = req.query;
+      const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 200);
+      const newArrivals = req.query.newArrivals === 'true' || req.query['new-arrivals'] === 'true';
+      const bestSellers = req.query.bestSellers === 'true' || req.query['best-sellers'] === 'true';
+      // Sorted/filtered views are computed in memory so no Firestore composite index is required.
+      const fetchLimit = newArrivals || bestSellers ? 200 : limit;
+
       let products = [];
       if (process.env.DEV_MODE === 'true') {
         const snap = await db.collection(COLLECTIONS.PRODUCTS).query(
           (d) => d.status === status,
-          { orderBy: 'desc', field: 'createdAt', limit: Number(limit) }
+          { orderBy: 'desc', field: 'createdAt', limit: fetchLimit }
         );
         products = snap.map((d) => d.data());
       } else {
         let q = db.collection(COLLECTIONS.PRODUCTS).where('status', '==', status);
         if (featured === 'true') q = q.where('featured', '==', true);
-        const snap = await q.limit(Number(limit)).get();
+        const snap = await q.limit(fetchLimit).get();
         products = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       }
       if (category) products = products.filter((p) => p.categoryIds && p.categoryIds.includes(category));
-      res.json({ products });
+
+      // Never return the same product twice (duplicate documents / repeated seeds).
+      const seen = new Set();
+      products = products.filter((p) => {
+        const key = p.slug || p.id;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      const created = (p) => new Date(p.createdAt || 0).getTime() || 0;
+      if (newArrivals) {
+        products.sort((a, b) => created(b) - created(a));
+      } else if (bestSellers) {
+        // Real sales first (soldCount is incremented on every order); the manual
+        // "best seller" flag only fills the gaps until sales data exists.
+        products = products
+          .filter((p) => Number(p.soldCount) > 0 || p.bestSeller)
+          .sort((a, b) => (Number(b.soldCount) || 0) - (Number(a.soldCount) || 0) || created(b) - created(a));
+      }
+      res.json({ products: products.slice(0, limit) });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -238,7 +264,7 @@ export const orderController = {
             for (const docSnap of snap) {
               const p = docSnap.data();
               const variants = (p.variants || []).map((v) => (v.sku === item.variantId ? { ...v, stock: Math.max(0, v.stock - item.quantity) } : v));
-              await db.collection(COLLECTIONS.PRODUCTS).doc(p.id).set({ ...p, variants, updatedAt: now });
+              await db.collection(COLLECTIONS.PRODUCTS).doc(p.id).set({ ...p, variants, soldCount: (Number(p.soldCount) || 0) + item.quantity, updatedAt: now });
             }
           }
         } else {
@@ -253,7 +279,8 @@ export const orderController = {
                 const qty = ordered.reduce((sum, i) => sum + i.quantity, 0);
                 return qty ? { ...v, stock: Math.max(0, v.stock - qty) } : v;
               });
-              tx.update(refs[idx], { variants, updatedAt: now });
+              const soldNow = data.items.filter((i) => i.productId === refs[idx].id).reduce((sum, i) => sum + i.quantity, 0);
+              tx.update(refs[idx], { variants, soldCount: (Number(p.soldCount) || 0) + soldNow, updatedAt: now });
             });
           });
         }

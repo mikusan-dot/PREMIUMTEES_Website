@@ -1,3 +1,4 @@
+import { dedupeProducts } from '@/lib/badges';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, RefreshCw } from 'lucide-react';
@@ -82,14 +83,14 @@ const LookTile = ({ product, className, priority = false }) => (
       decoding="async"
       className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
     />
-    <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-brand-black/15 to-transparent" />
+    <div className="absolute inset-0 bg-gradient-to-t from-brand-night/80 via-brand-night/15 to-transparent" />
     <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 md:p-6">
       <div className="min-w-0">
         <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.24em] text-white/60">Shop the look</p>
         <h3 className="truncate font-serif text-xl text-white md:text-2xl">{product.name}</h3>
         <p className="mt-1 text-xs text-white/70">{money(currentPrice(product))}</p>
       </div>
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/40 text-white transition-colors group-hover:bg-white group-hover:text-brand-black">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/40 text-white transition-colors group-hover:bg-white group-hover:text-brand-night">
         <ArrowRight className="h-4 w-4" />
       </span>
     </div>
@@ -123,11 +124,18 @@ export const Home = () => {
     staleTime: 10 * 60 * 1000,
   });
 
-  const sortedProducts = [...products].sort((a, b) =>
+  const uniqueProducts = dedupeProducts(products);
+  const sortedProducts = [...uniqueProducts].sort((a, b) =>
     String(b.createdAt || '').localeCompare(String(a.createdAt || '')),
   );
   const newArrivals = sortedProducts.slice(0, 8);
-  const bestSellers = sortedProducts.filter((product) => product.bestSeller).slice(0, 8);
+  // Best sellers are ranked by real units sold (soldCount); the admin flag only fills gaps.
+  const rankedBest = uniqueProducts
+    .filter((product) => Number(product.soldCount) > 0 || product.bestSeller)
+    .sort((a, b) => (Number(b.soldCount) || 0) - (Number(a.soldCount) || 0));
+  const newIds = new Set(newArrivals.map((product) => product.id));
+  const distinctBest = rankedBest.filter((product) => !newIds.has(product.id));
+  const bestSellers = (distinctBest.length > 0 ? distinctBest : rankedBest).slice(0, 8);
   const lookbook = sortedProducts.filter((product) => productImage(product)).slice(0, 3);
   const featuredProduct = sortedProducts.find((product) => productImage(product)) || null;
   const heroImage = featuredProduct ? productImage(featuredProduct) : HERO_IMAGE;
@@ -179,14 +187,14 @@ export const Home = () => {
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 to="/shop"
-                className="group inline-flex items-center justify-center gap-3 whitespace-nowrap bg-brand-black px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-brand-charcoal"
+                className="group inline-flex items-center justify-center gap-3 whitespace-nowrap bg-brand-black px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-white transition-colors hover:bg-brand-charcoal"
               >
                 Explore Collection
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
               <Link
                 to="/new-arrivals"
-                className="inline-flex items-center justify-center whitespace-nowrap border border-brand-black px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-black transition-colors hover:bg-brand-black hover:text-white"
+                className="inline-flex items-center justify-center whitespace-nowrap border border-brand-black px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-black transition-colors hover:bg-brand-black hover:text-brand-white"
               >
                 Shop New Arrivals
               </Link>
@@ -211,11 +219,11 @@ export const Home = () => {
                 }}
                 className="h-full w-full object-cover"
               />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-black/20 via-transparent to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-night/20 via-transparent to-transparent" />
               {featuredProduct && (
                 <Link
                   to={`/product/${featuredProduct.slug}`}
-                  className="absolute bottom-4 left-4 right-4 bg-white/95 p-4 backdrop-blur transition-colors hover:bg-white sm:right-auto sm:max-w-[250px]"
+                  className="absolute bottom-4 left-4 right-4 bg-brand-white/95 p-4 backdrop-blur transition-colors hover:bg-brand-white sm:right-auto sm:max-w-[250px]"
                 >
                   <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-brand-accent">Featured piece</p>
                   <p className="mt-1.5 truncate font-serif text-lg text-brand-black">{featuredProduct.name}</p>
@@ -253,7 +261,7 @@ export const Home = () => {
         </div>
       )}
 
-      <section className="border-t border-brand-border bg-white py-16 md:py-24">
+      <section className="border-t border-brand-border bg-brand-white py-16 md:py-24">
         <div className="container-premium">
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -283,7 +291,7 @@ export const Home = () => {
                   decoding="async"
                   className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                 />
-                <span className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-brand-black/20 to-transparent" />
+                <span className="absolute inset-0 bg-gradient-to-t from-brand-night/80 via-brand-night/20 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 md:p-5">
                   <div className="min-w-0">
                     <h3 className="line-clamp-2 font-serif text-base leading-snug text-white sm:text-lg md:text-xl">
@@ -293,7 +301,7 @@ export const Home = () => {
                       {category.description}
                     </p>
                   </div>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/40 text-white transition-colors group-hover:bg-white group-hover:text-brand-black">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/40 text-white transition-colors group-hover:bg-white group-hover:text-brand-night">
                     <ArrowRight className="h-3.5 w-3.5" />
                   </span>
                 </div>
@@ -312,7 +320,7 @@ export const Home = () => {
         viewAllHref="/new-arrivals"
       />
 
-      <section className="relative overflow-hidden bg-brand-black">
+      <section className="relative overflow-hidden bg-brand-night">
         <img
           src={PROMO_IMAGE}
           alt=""
@@ -320,7 +328,7 @@ export const Home = () => {
           decoding="async"
           className="absolute inset-0 h-full w-full object-cover opacity-50"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-black via-brand-black/65 to-brand-black/0" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-night via-brand-night/65 to-brand-night/0" />
         <div className="container-premium relative z-10 flex min-h-[420px] items-center py-16 md:min-h-[520px]">
           <div className="max-w-xl">
             <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/50">Limited release</p>
@@ -335,7 +343,7 @@ export const Home = () => {
             </p>
             <Link
               to="/shop"
-              className="group mt-8 inline-flex items-center gap-3 bg-white px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-black transition-colors hover:bg-brand-offwhite"
+              className="group mt-8 inline-flex items-center gap-3 bg-white px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-night transition-colors hover:bg-white/85"
             >
               Shop the Drop
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -356,7 +364,7 @@ export const Home = () => {
       )}
 
       {lookbook.length >= 2 && (
-        <section className="bg-white py-16 md:py-24">
+        <section className="bg-brand-white py-16 md:py-24">
           <div className="container-premium">
             <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>

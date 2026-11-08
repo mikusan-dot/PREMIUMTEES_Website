@@ -137,7 +137,7 @@ export const ProductDetail = () => {
                         key={s}
                         onClick={() => setSelectedSize(s)}
                         disabled={!available}
-                        className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium transition-all ${selectedSize === s ? 'bg-brand-black text-white border-brand-black' : `border-brand-border ${!available ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-offwhite'}`}`}
+                        className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium transition-all ${selectedSize === s ? 'bg-brand-black text-brand-white border-brand-black' : `border-brand-border ${!available ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-offwhite'}`}`}
                       >
                         {s}
                       </button>
@@ -229,6 +229,6 @@ export const ProductDetail = () => {
 };
 
 function colorToClass(c) {
-  const map = { Black: 'bg-black', White: 'bg-white border', Charcoal: 'bg-gray-700', Navy: 'bg-blue-900', Pink: 'bg-pink-500' };
-  return map[c] ?? 'bg-gray-400';
+  const map = { Black: 'bg-[#0a0a0a]', White: 'bg-white', Charcoal: 'bg-[#374151]', Navy: 'bg-[#1e3a8a]', Pink: 'bg-pink-500' };
+  return map[c] ?? 'bg-[#9ca3af]';
 }

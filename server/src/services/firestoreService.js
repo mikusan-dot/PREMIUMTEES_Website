@@ -240,14 +240,50 @@ export const orderController = {
       // same one returned to the customer (it used to be generated three times).
       const orderId = generateOrderId();
       const now = new Date().toISOString();
+
+      // Never trust prices from the browser: re-price every line from the product
+      // catalogue (sale-aware) and make sure the variant is still in stock.
+      let items = data.items;
+      let subtotal = data.subtotal;
+      let total = data.total;
+      if (process.env.DEV_MODE !== 'true') {
+        const ids = [...new Set(items.map((i) => i.productId))];
+        const snaps = await Promise.all(ids.map((id) => db.collection(COLLECTIONS.PRODUCTS).doc(id).get()));
+        const catalogue = new Map(snaps.filter((snap) => snap.exists).map((snap) => [snap.id, snap.data()]));
+        const nowMs = Date.now();
+        items = items.map((item) => {
+          const product = catalogue.get(item.productId);
+          if (!product || product.status === 'archived') {
+            const err = new Error(`"${item.name}" is no longer available.`);
+            err.status = 400;
+            throw err;
+          }
+          const variant = (product.variants || []).find((v) => v.sku === item.variantId);
+          if (variant && Number(variant.stock) < item.quantity) {
+            const err = new Error(Number(variant.stock) > 0 ? `Only ${variant.stock} of "${item.name}" (${item.color} / ${item.size}) left in stock.` : `"${item.name}" (${item.color} / ${item.size}) is out of stock.`);
+            err.status = 400;
+            throw err;
+          }
+          const regular = Number(product.price) || 0;
+          const sale = Number(product.salePrice) || 0;
+          const end = product.saleEndsAt ? new Date(product.saleEndsAt).getTime() : null;
+          const saleLive = sale > 0 && sale < regular && (end === null || Number.isNaN(end) || end > nowMs);
+          return { ...item, price: saleLive ? sale : regular };
+        });
+        subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        const discount = Math.min(data.discount || 0, subtotal);
+        data.discount = discount;
+        total = Math.max(0, subtotal - discount + (data.deliveryCharge || 0));
+      }
+
       const orderRef = await db.collection(COLLECTIONS.ORDERS).add({
         orderId,
         customer: data.customer,
-        items: data.items,
-        subtotal: data.subtotal,
+        items,
+        subtotal,
         discount: data.discount,
         deliveryCharge: data.deliveryCharge,
-        total: data.total,
+        total,
         paymentMethod: data.paymentMethod,
         paymentStatus: data.paymentMethod === 'cod' ? 'unpaid' : 'pending',
         orderStatus: 'pending',
@@ -292,7 +328,7 @@ export const orderController = {
       await logAction({ adminId: null, adminName: 'guest', action: 'order_created', target: `orders/${orderRef.id}`, details: { orderId } });
       res.status(201).json({ orderId, message: 'Order placed' });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      res.status(err.status || 500).json({ error: err.message });
     }
   },
 

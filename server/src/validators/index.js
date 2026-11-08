@@ -68,6 +68,15 @@ export const couponSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+export const collectionSchema = z.object({
+  name: z.string().min(2),
+  slug: z.string().min(2),
+  description: z.string().optional(),
+  image: z.string().optional().nullable(),
+  isActive: z.boolean().default(true),
+  sortOrder: z.number().default(0),
+});
+
 export const categorySchema = z.object({
   name: z.string().min(2),
   slug: z.string().min(2),

@@ -11,6 +11,7 @@ import { Wishlist } from '@/pages/Wishlist';
 import { Checkout } from '@/pages/Checkout';
 import { OrderTracking } from '@/pages/OrderTracking';
 import { Categories } from '@/pages/Categories';
+import { Collections, CollectionDetail } from '@/pages/Collections';
 import { About } from '@/pages/About';
 import { Contact } from '@/pages/Contact';
 import { NotFound } from '@/pages/NotFound';
@@ -21,6 +22,7 @@ import {
   AdminProducts,
   AdminOrders,
   AdminCategories,
+  AdminCollections,
   AdminSettings,
   AdminCoupons,
   AdminUsers,
@@ -41,6 +43,8 @@ const App = () => (
         <Route path="new-arrivals" element={<NewArrivals />} />
         <Route path="best-sellers" element={<BestSellers />} />
         <Route path="categories" element={<Categories />} />
+        <Route path="collections" element={<Collections />} />
+        <Route path="collections/:slug" element={<CollectionDetail />} />
         <Route path="product/:slug" element={<ProductDetail />} />
         <Route path="wishlist" element={<Wishlist />} />
         <Route path="cart" element={<Cart />} />
@@ -65,6 +69,7 @@ const App = () => (
         <Route path="products" element={<AdminProducts />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="categories" element={<AdminCategories />} />
+        <Route path="collections" element={<AdminCollections />} />
         <Route path="coupons" element={<AdminCoupons />} />
         <Route path="payments" element={<AdminPayments />} />
         <Route path="users" element={<AdminUsers />} />

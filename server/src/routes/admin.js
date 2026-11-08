@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticateAdmin, authorize } from '../middleware/auth.js';
 import multer from 'multer';
 import {
-  productController, categoryController, orderController, couponController,
+  productController, categoryController, collectionController, orderController, couponController,
   dashboardController, settingsController, paymentController,
 } from '../services/firestoreService.js';
 import {
@@ -10,7 +10,7 @@ import {
 } from '../controllers/admin.js';
 import { uploadController } from '../controllers/uploadController.js';
 import { validate } from '../validators/index.js';
-import { productSchema, couponSchema, categorySchema, settingsSchema, adminUserSchema, adminRoleSchema } from '../validators/index.js';
+import { productSchema, couponSchema, categorySchema, collectionSchema, settingsSchema, adminUserSchema, adminRoleSchema } from '../validators/index.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
@@ -30,6 +30,12 @@ router.get('/products', authenticateAdmin, authorize('super_admin', 'product_man
 router.post('/products', authenticateAdmin, authorize('super_admin', 'product_manager'), validate(productSchema), productController.create);
 router.put('/products/:id', authenticateAdmin, authorize('super_admin', 'product_manager'), validate(productSchema), productController.update);
 router.delete('/products/:id', authenticateAdmin, authorize('super_admin', 'product_manager'), productController.delete);
+
+// Collections
+router.get('/collections', authenticateAdmin, authorize('super_admin', 'product_manager', 'marketing_manager', 'viewer'), collectionController.adminList);
+router.post('/collections', authenticateAdmin, authorize('super_admin', 'product_manager', 'marketing_manager'), validate(collectionSchema), collectionController.create);
+router.put('/collections/:id', authenticateAdmin, authorize('super_admin', 'product_manager', 'marketing_manager'), validate(collectionSchema), collectionController.update);
+router.delete('/collections/:id', authenticateAdmin, authorize('super_admin', 'product_manager', 'marketing_manager'), collectionController.delete);
 
 // Categories
 router.get('/categories', authenticateAdmin, authorize('super_admin', 'product_manager', 'viewer'), categoryController.adminList);

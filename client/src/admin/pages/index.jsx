@@ -18,6 +18,7 @@ export const AdminProducts = () => {
     images: [],
     variants: [{ color: '', size: '', stock: '0' }],
     categoryIds: [],
+    collectionIds: [],
     status: 'active',
     featured: false,
     bestSeller: false,
@@ -29,10 +30,12 @@ export const AdminProducts = () => {
   const [message, setMessage] = useState(null);
 
   const [categories, setCategories] = useState([]);
+  const [collections, setCollections] = useState([]);
 
   useEffect(() => {
     fetchProducts();
     api.get('/admin/categories').then((res) => setCategories(res.data.categories || [])).catch(() => {});
+    api.get('/admin/collections').then((res) => setCollections(res.data.collections || [])).catch(() => {});
   }, []);
 
   const fetchProducts = async () => {
@@ -161,6 +164,7 @@ export const AdminProducts = () => {
           stock: v.stock,
         })),
         categoryIds: form.categoryIds.filter(Boolean),
+        collectionIds: (form.collectionIds || []).filter(Boolean),
       };
       await api.post('/admin/products', payload);
       const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
@@ -170,7 +174,7 @@ export const AdminProducts = () => {
           ? 'Product created'
           : 'Product created, but every variant has 0 stock, so it will show as Out of Stock until you add stock.',
       });
-      setForm({ name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [{ color: '', size: '', stock: '0' }], categoryIds: [], status: 'active', featured: false, bestSeller: false, limitedEdition: false, salePrice: '', saleEndsAt: '', limitedEndsAt: '' });
+      setForm({ name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [{ color: '', size: '', stock: '0' }], categoryIds: [], collectionIds: [], status: 'active', featured: false, bestSeller: false, limitedEdition: false, salePrice: '', saleEndsAt: '', limitedEndsAt: '' });
       setImageUrl('');
       fetchProducts();
     } catch (err) {
@@ -245,6 +249,29 @@ export const AdminProducts = () => {
                         type="button"
                         key={c.id}
                         onClick={() => handleChange('categoryIds', on ? form.categoryIds.filter((x) => x !== c.slug) : [...form.categoryIds, c.slug])}
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? 'border-brand-black bg-brand-black text-brand-white' : 'border-gray-300 bg-brand-white text-gray-700 hover:border-brand-black'}`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Collections</Label>
+              {collections.length === 0 ? (
+                <p className="text-sm text-gray-500">No collections yet. Create one on the Collections page first.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {collections.map((c) => {
+                    const on = (form.collectionIds || []).includes(c.slug);
+                    return (
+                      <button
+                        type="button"
+                        key={c.id}
+                        onClick={() => handleChange('collectionIds', on ? form.collectionIds.filter((x) => x !== c.slug) : [...(form.collectionIds || []), c.slug])}
                         className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? 'border-brand-black bg-brand-black text-brand-white' : 'border-gray-300 bg-brand-white text-gray-700 hover:border-brand-black'}`}
                       >
                         {c.name}
@@ -343,6 +370,7 @@ export const AdminProducts = () => {
 export { AdminDashboard } from './Dashboard';
 export { AdminOrders } from './Orders';
 export { AdminCategories } from './Categories';
+export { AdminCollections } from './Collections';
 export { AdminCoupons } from './Coupons';
 export { AdminPayments } from './Payments';
 export { AdminUsers } from './Users';

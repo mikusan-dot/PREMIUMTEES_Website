@@ -6,6 +6,7 @@ const SHOP_LINKS = [
   { name: 'Shop All', href: '/shop' },
   { name: 'New Arrivals', href: '/new-arrivals' },
   { name: 'Best Sellers', href: '/best-sellers' },
+  { name: 'Collections', href: '/collections' },
   { name: 'Categories', href: '/categories' },
   { name: 'Wishlist', href: '/wishlist' },
 ];

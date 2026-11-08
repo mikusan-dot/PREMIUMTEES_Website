@@ -1,12 +1,13 @@
 import { Outlet } from 'react-router-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Ticket, Tags, CreditCard, Users, BarChart3, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Ticket, Tags, CreditCard, Users, BarChart3, Settings, LogOut, Layers } from 'lucide-react';
 
 const ADMIN_LINKS = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
+  { name: 'Collections', href: '/admin/collections', icon: Layers },
   { name: 'Coupons', href: '/admin/coupons', icon: Ticket },
   { name: 'Payments', href: '/admin/payments', icon: CreditCard },
   { name: 'Users', href: '/admin/users', icon: Users },

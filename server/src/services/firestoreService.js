@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 const COLLECTIONS = {
   PRODUCTS: 'products',
   CATEGORIES: 'categories',
+  STORE_COLLECTIONS: 'collections',
   ORDERS: 'orders',
   COUPONS: 'coupons',
   SETTINGS: 'settings',
@@ -225,6 +226,124 @@ export const categoryController = {
         categories = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       }
       res.json({ categories });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+};
+
+// ---------- Collections (curated drops, e.g. "Summer 2026") ----------
+const readAllCollections = async () => {
+  if (process.env.DEV_MODE === 'true') {
+    const snap = await db.collection(COLLECTIONS.STORE_COLLECTIONS).query(() => true);
+    return snap.map((d) => d.data());
+  }
+  const snap = await db.collection(COLLECTIONS.STORE_COLLECTIONS).get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+const readActiveProducts = async () => {
+  if (process.env.DEV_MODE === 'true') {
+    const snap = await db.collection(COLLECTIONS.PRODUCTS).query((d) => d.status === 'active');
+    return snap.map((d) => d.data());
+  }
+  const snap = await db.collection(COLLECTIONS.PRODUCTS).where('status', '==', 'active').limit(500).get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+const bySortOrder = (a, b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0) || String(a.name).localeCompare(String(b.name));
+
+export const collectionController = {
+  // Public: active collections with how many live products each holds.
+  list: async (req, res) => {
+    try {
+      const [all, products] = await Promise.all([readAllCollections(), readActiveProducts()]);
+      const collections = all
+        .filter((c) => c.isActive !== false)
+        .sort(bySortOrder)
+        .map((c) => ({ ...c, productCount: products.filter((p) => (p.collectionIds || []).includes(c.slug)).length }));
+      res.json({ collections });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  // Public: one collection plus its products.
+  getBySlug: async (req, res) => {
+    try {
+      const all = await readAllCollections();
+      const collection = all.find((c) => c.slug === req.params.slug && c.isActive !== false);
+      if (!collection) return res.status(404).json({ error: 'Collection not found' });
+      const products = (await readActiveProducts())
+        .filter((p) => (p.collectionIds || []).includes(collection.slug))
+        .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+      res.json({ collection, products });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  adminList: async (req, res) => {
+    try {
+      const [all, products] = await Promise.all([readAllCollections(), readActiveProducts()]);
+      const collections = all.sort(bySortOrder).map((c) => ({ ...c, productCount: products.filter((p) => (p.collectionIds || []).includes(c.slug)).length }));
+      res.json({ collections });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  create: async (req, res) => {
+    try {
+      const data = req.validated;
+      const all = await readAllCollections();
+      if (all.some((c) => c.slug === data.slug)) return res.status(409).json({ error: 'A collection with this slug already exists' });
+      const now = new Date().toISOString();
+      const doc = await db.collection(COLLECTIONS.STORE_COLLECTIONS).add({ ...data, createdAt: now, updatedAt: now });
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'collection_created', target: `collections/${doc.id}`, details: data });
+      res.status(201).json({ id: doc.id, message: 'Collection created' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  update: async (req, res) => {
+    try {
+      const data = req.validated;
+      const all = await readAllCollections();
+      if (all.some((c) => c.slug === data.slug && c.id !== req.params.id)) return res.status(409).json({ error: 'A collection with this slug already exists' });
+      const previous = all.find((c) => c.id === req.params.id);
+      await db.collection(COLLECTIONS.STORE_COLLECTIONS).doc(req.params.id).set({ ...data, updatedAt: new Date().toISOString() }, { merge: true });
+      // Products reference collections by slug, so keep them attached if the slug changes.
+      if (previous && previous.slug !== data.slug) {
+        const now = new Date().toISOString();
+        const products = (await readActiveProducts()).filter((p) => (p.collectionIds || []).includes(previous.slug));
+        for (const p of products) {
+          const collectionIds = p.collectionIds.map((slug) => (slug === previous.slug ? data.slug : slug));
+          await db.collection(COLLECTIONS.PRODUCTS).doc(p.id).set({ collectionIds, updatedAt: now }, { merge: true });
+        }
+      }
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'collection_updated', target: `collections/${req.params.id}`, details: data });
+      res.json({ message: 'Collection updated' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  delete: async (req, res) => {
+    try {
+      const all = await readAllCollections();
+      const existing = all.find((c) => c.id === req.params.id);
+      await db.collection(COLLECTIONS.STORE_COLLECTIONS).doc(req.params.id).delete();
+      if (existing) {
+        const now = new Date().toISOString();
+        const products = (await readActiveProducts()).filter((p) => (p.collectionIds || []).includes(existing.slug));
+        for (const p of products) {
+          await db.collection(COLLECTIONS.PRODUCTS).doc(p.id).set({ collectionIds: p.collectionIds.filter((slug) => slug !== existing.slug), updatedAt: now }, { merge: true });
+        }
+      }
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'collection_deleted', target: `collections/${req.params.id}` });
+      res.json({ message: 'Collection deleted' });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

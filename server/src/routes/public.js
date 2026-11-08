@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
   productController, orderController, couponController, settingsController,
-  categoryController, paymentController, reviewController, newsletterController,
+  categoryController, collectionController, paymentController, reviewController, newsletterController,
 } from '../services/firestoreService.js';
 import { validate } from '../validators/index.js';
 import { newsletterSchema, orderSchema } from '../validators/index.js';
@@ -11,6 +11,10 @@ const router = Router();
 // Public product routes
 router.get('/products', productController.list);
 router.get('/products/:slug', productController.getBySlug);
+
+// Public collections
+router.get('/collections', collectionController.list);
+router.get('/collections/:slug', collectionController.getBySlug);
 
 // Public categories
 router.get('/categories', categoryController.list);

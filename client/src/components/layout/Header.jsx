@@ -11,8 +11,9 @@ const NAV_LINKS = [
   { name: 'Shop', href: '/shop' },
   { name: 'New Arrivals', href: '/new-arrivals' },
   { name: 'Best Sellers', href: '/best-sellers' },
+  { name: 'Collections', href: '/collections' },
   { name: 'Categories', href: '/categories' },
-  { name: 'About', href: '/about' },
+  { name: 'About', href: '/about', mobileOnly: true },
   { name: 'Contact', href: '/contact' },
 ];
 
@@ -99,13 +100,13 @@ export const Header = () => {
           PREMIUM<span className="text-brand-accent">TEES</span>
         </Link>
 
-        <nav className="hidden items-center gap-5 lg:flex xl:gap-8" aria-label="Primary navigation">
-          {NAV_LINKS.map((link) => (
+        <nav className="hidden items-center gap-3.5 lg:flex xl:gap-8" aria-label="Primary navigation">
+          {NAV_LINKS.filter((link) => !link.mobileOnly).map((link) => (
             <Link
               key={link.name}
               to={link.href}
               className={cn(
-                'group relative whitespace-nowrap py-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors xl:text-[11px] xl:tracking-[0.18em]',
+                'group relative whitespace-nowrap py-2 text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors lg:tracking-[0.1em] xl:text-[11px] xl:tracking-[0.18em]',
                 isActive(link.href) ? 'text-brand-black' : 'text-brand-charcoal/65 hover:text-brand-black',
               )}
             >

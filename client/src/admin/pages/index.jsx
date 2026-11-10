@@ -1,3 +1,4 @@
+import { VariantMatrix } from '@/admin/components/VariantMatrix';
 import { useEffect, useState } from 'react';
 import { api } from '@/services/api';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ export const AdminProducts = () => {
     description: '',
     price: '',
     images: [],
-    variants: [{ color: '', size: '', stock: '0' }],
+    variants: [],
     categoryIds: [],
     collectionIds: [],
     status: 'active',
@@ -29,6 +30,7 @@ export const AdminProducts = () => {
   });
   const [message, setMessage] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [formKey, setFormKey] = useState(0);
 
   const [categories, setCategories] = useState([]);
   const [collections, setCollections] = useState([]);
@@ -94,27 +96,7 @@ export const AdminProducts = () => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleVariantChange = (index, field, value) => {
-    setForm((prev) => {
-      const variants = [...prev.variants];
-      variants[index][field] = value;
-      return { ...prev, variants };
-    });
-  };
-
-  const addVariant = () => {
-    setForm((prev) => ({ ...prev, variants: [...prev.variants, { color: '', size: '', stock: '0' }] }));
-  };
-
-  const removeVariant = (index) => {
-    setForm((prev) => {
-      const variants = [...prev.variants];
-      variants.splice(index, 1);
-      return { ...prev, variants };
-    });
-  };
-
-  const EMPTY_FORM = { name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [{ color: '', size: '', stock: '0' }], categoryIds: [], collectionIds: [], status: 'active', featured: false, bestSeller: false, limitedEdition: false, salePrice: '', saleEndsAt: '', limitedEndsAt: '' };
+  const EMPTY_FORM = { name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [], categoryIds: [], collectionIds: [], status: 'active', featured: false, bestSeller: false, limitedEdition: false, salePrice: '', saleEndsAt: '', limitedEndsAt: '' };
 
   const toLocalInput = (iso) => {
     if (!iso) return '';
@@ -126,6 +108,7 @@ export const AdminProducts = () => {
 
   const startEdit = (p) => {
     setEditingId(p.id);
+    setFormKey((k) => k + 1);
     setMessage(null);
     setImageUrl('');
     setForm({
@@ -140,6 +123,7 @@ export const AdminProducts = () => {
   };
 
   const cancelEdit = () => {
+    setFormKey((k) => k + 1);
     setEditingId(null);
     setForm(EMPTY_FORM);
     setImageUrl('');
@@ -174,7 +158,7 @@ export const AdminProducts = () => {
       .filter((v) => v.color || v.size || v.stock > 0);
 
     if (variants.length === 0) {
-      setMessage({ type: 'error', text: 'Add at least one variant with a color and size.' });
+      setMessage({ type: 'error', text: 'Choose at least one size and one colour, then set the stock.' });
       return;
     }
     if (variants.some((v) => !v.color || !v.size || !Number.isFinite(v.stock) || v.stock < 0)) {
@@ -212,6 +196,7 @@ export const AdminProducts = () => {
           : `Product ${editingId ? 'updated' : 'created'}, but every variant has 0 stock, so it will show as Out of Stock until you add stock.`,
       });
       setForm(EMPTY_FORM);
+      setFormKey((k) => k + 1);
       setEditingId(null);
       setImageUrl('');
       fetchProducts();
@@ -325,16 +310,8 @@ export const AdminProducts = () => {
             </div>
 
             <div className="border-t pt-4">
-              <h3 className="font-bold text-brand-black mb-4">Variants</h3>
-              {form.variants.map((v, i) => (
-                <div key={i} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3 border-b pb-2 last:border-0 last:pb-0">
-                  <Input placeholder="Color" value={v.color} onChange={(e) => handleVariantChange(i, 'color', e.target.value)} />
-                  <Input placeholder="Size" value={v.size} onChange={(e) => handleVariantChange(i, 'size', e.target.value)} />
-                  <Input type="number" min="0" placeholder="Stock" value={v.stock} onChange={(e) => handleVariantChange(i, 'stock', e.target.value)} />
-                  <Button type="button" variant="outline" size="sm" onClick={() => removeVariant(i)} disabled={form.variants.length === 1}>Remove</Button>
-                </div>
-              ))}
-              <Button type="button" variant="outline" size="sm" onClick={addVariant}>+ Add Variant</Button>
+              <h3 className="font-bold text-brand-black mb-4">Sizes, colours &amp; stock</h3>
+              <VariantMatrix key={formKey} variants={form.variants} onChange={(variants) => handleChange('variants', variants)} />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

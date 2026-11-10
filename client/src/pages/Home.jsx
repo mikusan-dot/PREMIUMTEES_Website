@@ -138,7 +138,15 @@ export const Home = () => {
           </div>
 
           <div className="relative lg:col-span-6 xl:col-span-7">
-            <div className="relative h-[420px] overflow-hidden bg-brand-offwhite sm:h-[520px] lg:ml-auto lg:h-[610px] lg:max-w-[560px] xl:h-[660px] xl:max-w-[600px]">
+            <div className="relative h-[420px] overflow-hidden bg-brand-white sm:h-[520px] lg:ml-auto lg:h-[610px] lg:max-w-[560px] xl:h-[660px] xl:max-w-[600px]">
+              {/* Soft blurred copy fills the frame so the full product photo can be shown uncropped. */}
+              <img
+                src={heroImage}
+                alt=""
+                aria-hidden="true"
+                decoding="async"
+                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-2xl"
+              />
               <img
                 src={heroImage}
                 alt={featuredProduct ? featuredProduct.name : 'Premium Tees editorial'}
@@ -148,7 +156,7 @@ export const Home = () => {
                   event.currentTarget.src = HERO_IMAGE;
                   event.currentTarget.onerror = null;
                 }}
-                className="h-full w-full object-cover"
+                className="relative h-full w-full object-contain"
               />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-night/20 via-transparent to-transparent" />
               {featuredProduct && (

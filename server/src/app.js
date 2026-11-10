@@ -35,9 +35,12 @@ app.use(cors({
 }));
 
 // Rate limiting
+// A storefront page makes several API calls and filters/pagination add more, so a low
+// limit (it used to be 100) locks out ordinary shoppers. The admin API has its own limiter.
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // requests per window per IP
+  max: Number(process.env.RATE_LIMIT_MAX) || 1500, // requests per window per IP
+  skip: (req) => req.originalUrl.startsWith('/api/admin'),
   message: { error: 'Too many requests, please try again later' },
 });
 app.use(globalLimiter);

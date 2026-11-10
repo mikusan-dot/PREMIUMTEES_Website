@@ -28,6 +28,7 @@ export const AdminProducts = () => {
     limitedEndsAt: '',
   });
   const [message, setMessage] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   const [categories, setCategories] = useState([]);
   const [collections, setCollections] = useState([]);
@@ -113,6 +114,37 @@ export const AdminProducts = () => {
     });
   };
 
+  const EMPTY_FORM = { name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [{ color: '', size: '', stock: '0' }], categoryIds: [], collectionIds: [], status: 'active', featured: false, bestSeller: false, limitedEdition: false, salePrice: '', saleEndsAt: '', limitedEndsAt: '' };
+
+  const toLocalInput = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const startEdit = (p) => {
+    setEditingId(p.id);
+    setMessage(null);
+    setImageUrl('');
+    setForm({
+      name: p.name || '', slug: p.slug || '', sku: p.sku || '', description: p.description || '', price: String(p.price ?? ''),
+      images: p.images || [],
+      variants: (p.variants?.length ? p.variants : [{ color: '', size: '', stock: 0 }]).map((v) => ({ sku: v.sku, color: v.color || '', size: v.size || '', stock: String(v.stock ?? 0) })),
+      categoryIds: p.categoryIds || [], collectionIds: p.collectionIds || [], status: p.status || 'active',
+      featured: !!p.featured, bestSeller: !!p.bestSeller, limitedEdition: !!p.limitedEdition,
+      salePrice: p.salePrice ? String(p.salePrice) : '', saleEndsAt: toLocalInput(p.saleEndsAt), limitedEndsAt: toLocalInput(p.limitedEndsAt),
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+    setImageUrl('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
@@ -121,6 +153,10 @@ export const AdminProducts = () => {
     const salePrice = form.salePrice === '' ? 0 : Number(form.salePrice);
     if (!form.name.trim() || !form.slug.trim() || !form.sku.trim()) {
       setMessage({ type: 'error', text: 'Name, slug and SKU are required.' });
+      return;
+    }
+    if (!form.categoryIds.length) {
+      setMessage({ type: 'error', text: 'Choose at least one category so customers can find this product.' });
       return;
     }
     if (!Number.isFinite(price) || price <= 0) {
@@ -134,7 +170,7 @@ export const AdminProducts = () => {
     }
 
     const variants = form.variants
-      .map((v) => ({ color: v.color.trim(), size: v.size.trim(), stock: Number(v.stock) }))
+      .map((v) => ({ sku: v.sku, color: v.color.trim(), size: v.size.trim(), stock: Number(v.stock) }))
       .filter((v) => v.color || v.size || v.stock > 0);
 
     if (variants.length === 0) {
@@ -158,7 +194,7 @@ export const AdminProducts = () => {
         saleEndsAt: salePrice > 0 && form.saleEndsAt ? new Date(form.saleEndsAt).toISOString() : null,
         limitedEndsAt: form.limitedEdition && form.limitedEndsAt ? new Date(form.limitedEndsAt).toISOString() : null,
         variants: variants.map((v) => ({
-          sku: `${form.sku.trim()}-${v.color}-${v.size}`,
+          sku: v.sku || `${form.sku.trim()}-${v.color}-${v.size}`,
           color: v.color,
           size: v.size,
           stock: v.stock,
@@ -166,19 +202,21 @@ export const AdminProducts = () => {
         categoryIds: form.categoryIds.filter(Boolean),
         collectionIds: (form.collectionIds || []).filter(Boolean),
       };
-      await api.post('/admin/products', payload);
+      if (editingId) await api.put(`/admin/products/${editingId}`, payload);
+      else await api.post('/admin/products', payload);
       const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
       setMessage({
         type: 'success',
         text: totalStock > 0
-          ? 'Product created'
-          : 'Product created, but every variant has 0 stock, so it will show as Out of Stock until you add stock.',
+          ? (editingId ? 'Product updated' : 'Product created')
+          : `Product ${editingId ? 'updated' : 'created'}, but every variant has 0 stock, so it will show as Out of Stock until you add stock.`,
       });
-      setForm({ name: '', slug: '', sku: '', description: '', price: '', images: [], variants: [{ color: '', size: '', stock: '0' }], categoryIds: [], collectionIds: [], status: 'active', featured: false, bestSeller: false, limitedEdition: false, salePrice: '', saleEndsAt: '', limitedEndsAt: '' });
+      setForm(EMPTY_FORM);
+      setEditingId(null);
       setImageUrl('');
       fetchProducts();
     } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data?.error || 'Failed to create product' });
+      setMessage({ type: 'error', text: err.response?.data?.error || 'Failed to save product' });
     } finally {
       setLoading(false);
     }
@@ -188,7 +226,7 @@ export const AdminProducts = () => {
     <div className="p-8">
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-1/2 space-y-6">
-          <h1 className="text-3xl font-bold text-brand-black">Product Management</h1>
+          <h1 className="text-3xl font-bold text-brand-black">{editingId ? 'Edit Product' : 'Product Management'}</h1>
 
           {message && (
             <div className={`p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
@@ -227,13 +265,17 @@ export const AdminProducts = () => {
                   <input type="file" accept="image/*" onChange={handleImageUpload} className="sr-only" />
                   {uploading ? 'Uploading...' : 'Upload T-Shirt Design Image'}
                 </Label>
-                {imageUrl && (
-                  <div className="flex items-center gap-3">
-                    <img src={imageUrl} alt="preview" className="w-20 h-20 object-cover rounded border" />
-                    <Button type="button" variant="outline" size="sm" onClick={() => setImageUrl('')}>Remove</Button>
-                  </div>
-                )}
               </div>
+              {form.images.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {form.images.map((url, i) => (
+                    <div key={url + i} className="relative">
+                      <img src={url} alt="" className="h-20 w-20 rounded border object-cover" />
+                      <button type="button" aria-label="Remove image" onClick={() => handleChange('images', form.images.filter((_, idx) => idx !== i))} className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-brand-black text-xs text-brand-white">×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -334,8 +376,9 @@ export const AdminProducts = () => {
             </div>
 
             <Button type="submit" disabled={loading} className="w-full bg-brand-black text-brand-white" loading={loading}>
-              {loading ? 'Creating...' : 'Create Product'}
+              {loading ? 'Saving...' : editingId ? 'Save Changes' : 'Create Product'}
             </Button>
+            {editingId && <Button type="button" variant="outline" className="w-full" onClick={cancelEdit}>Cancel editing</Button>}
           </form>
         </div>
 
@@ -354,6 +397,7 @@ export const AdminProducts = () => {
                       <div className="text-xs text-gray-500">SKU: {p.sku} · ৳{p.price}</div>
                     </div>
                     <span className={`text-xs font-medium ${p.status === 'active' ? 'text-green-600' : 'text-gray-500'}`}>{p.status}</span>
+                    <Button type="button" size="sm" variant="outline" onClick={() => startEdit(p)}>Edit</Button>
                     <Button type="button" size="sm" variant="outline" onClick={() => toggleStatus(p)}>{p.status === 'active' ? 'Archive' : 'Restore'}</Button>
                     <Button type="button" size="sm" variant="destructive" onClick={() => handleDelete(p)}>Delete</Button>
                   </div>

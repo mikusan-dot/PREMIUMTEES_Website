@@ -10,7 +10,7 @@ import {
 } from '../controllers/admin.js';
 import { uploadController } from '../controllers/uploadController.js';
 import { validate } from '../validators/index.js';
-import { productSchema, couponSchema, categorySchema, collectionSchema, settingsSchema, adminUserSchema, adminRoleSchema } from '../validators/index.js';
+import { productSchema, productUpdateSchema, couponSchema, categorySchema, collectionSchema, settingsSchema, adminUserSchema, adminRoleSchema } from '../validators/index.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
@@ -28,7 +28,7 @@ router.get('/dashboard', authenticateAdmin, authorize('super_admin', 'product_ma
 // Products
 router.get('/products', authenticateAdmin, authorize('super_admin', 'product_manager', 'viewer'), productController.adminList);
 router.post('/products', authenticateAdmin, authorize('super_admin', 'product_manager'), validate(productSchema), productController.create);
-router.put('/products/:id', authenticateAdmin, authorize('super_admin', 'product_manager'), validate(productSchema), productController.update);
+router.put('/products/:id', authenticateAdmin, authorize('super_admin', 'product_manager'), validate(productUpdateSchema), productController.update);
 router.delete('/products/:id', authenticateAdmin, authorize('super_admin', 'product_manager'), productController.delete);
 
 // Collections
@@ -40,6 +40,8 @@ router.delete('/collections/:id', authenticateAdmin, authorize('super_admin', 'p
 // Categories
 router.get('/categories', authenticateAdmin, authorize('super_admin', 'product_manager', 'viewer'), categoryController.adminList);
 router.post('/categories', authenticateAdmin, authorize('super_admin', 'product_manager'), validate(categorySchema), categoryController.create);
+router.put('/categories/reorder', authenticateAdmin, authorize('super_admin', 'product_manager'), categoryController.reorder);
+router.post('/categories/seed-defaults', authenticateAdmin, authorize('super_admin', 'product_manager'), categoryController.seedDefaults);
 router.put('/categories/:id', authenticateAdmin, authorize('super_admin', 'product_manager'), validate(categorySchema), categoryController.update);
 router.delete('/categories/:id', authenticateAdmin, authorize('super_admin', 'product_manager'), categoryController.delete);
 

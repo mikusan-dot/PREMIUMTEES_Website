@@ -11,6 +11,8 @@ import { Wishlist } from '@/pages/Wishlist';
 import { Checkout } from '@/pages/Checkout';
 import { OrderTracking } from '@/pages/OrderTracking';
 import { Categories } from '@/pages/Categories';
+import { CategoryPage } from '@/pages/CategoryPage';
+import { Sale } from '@/pages/Sale';
 import { Collections, CollectionDetail } from '@/pages/Collections';
 import { About } from '@/pages/About';
 import { Contact } from '@/pages/Contact';
@@ -43,6 +45,8 @@ const App = () => (
         <Route path="new-arrivals" element={<NewArrivals />} />
         <Route path="best-sellers" element={<BestSellers />} />
         <Route path="categories" element={<Categories />} />
+        <Route path="category/:slug" element={<CategoryPage />} />
+        <Route path="sale" element={<Sale />} />
         <Route path="collections" element={<Collections />} />
         <Route path="collections/:slug" element={<CollectionDetail />} />
         <Route path="product/:slug" element={<ProductDetail />} />

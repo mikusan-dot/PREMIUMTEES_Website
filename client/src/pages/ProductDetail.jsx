@@ -8,6 +8,7 @@ import { useWishlistStore } from '@/store/wishlistStore';
 import { colorHex, getCurrentPrice, getDefaultVariant, getProductColors, getProductSizes, getVariants } from '@/lib/product';
 import { dedupeProducts, getProductBadges, getStockLabel, isSaleActive, nextCampaignEnd } from '@/lib/badges';
 import { useNow } from '@/hooks/useNow';
+import { useCategories } from '@/hooks/useCategories';
 import { ProductCard } from '@/components/product/ProductCard';
 import { GridMessage } from '@/components/product/ProductListingPage';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,8 @@ export const ProductDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCartStore();
+  const { categories } = useCategories();
+  const categoryName = (slug) => categories.find((c) => c.slug === slug)?.name || slug;
   const { ids, toggle } = useWishlistStore();
 
   const { data: product, isLoading, isError, error, refetch } = useQuery({
@@ -50,8 +53,17 @@ export const ProductDetail = () => {
   });
 
   const { data: related = [] } = useQuery({
-    queryKey: ['products', 'related'],
-    queryFn: async () => (await api.get('/products', { params: { newArrivals: true, limit: 12 } })).data.products,
+    queryKey: ['products', 'related', product?.categoryIds?.[0] || 'all'],
+    queryFn: async () => {
+      const category = product?.categoryIds?.[0];
+      const { data } = await api.get('/products', { params: { category, sort: 'popular', limit: 12 } });
+      // Fall back to the newest products when the category has nothing else to show.
+      if (category && data.products.filter((p) => p.id !== product.id).length < 4) {
+        return (await api.get('/products', { params: { newArrivals: true, limit: 12 } })).data.products;
+      }
+      return data.products;
+    },
+    enabled: Boolean(product),
     staleTime: 60_000,
   });
 
@@ -161,8 +173,12 @@ export const ProductDetail = () => {
       <div className="container-premium">
         <nav className="mb-6 text-sm text-brand-muted md:mb-8" aria-label="Breadcrumb">
           <Link to="/" className="hover:text-brand-black">Home</Link> <span>/</span>{' '}
-          <Link to="/shop" className="hover:text-brand-black">Shop</Link> <span>/</span>{' '}
-          <span className="text-brand-black">{product.name}</span>
+          {product.categoryIds?.[0] ? (
+            <Link to={`/category/${product.categoryIds[0]}`} className="hover:text-brand-black">{categoryName(product.categoryIds[0])}</Link>
+          ) : (
+            <Link to="/shop" className="hover:text-brand-black">Shop</Link>
+          )}{' '}
+          <span>/</span> <span className="text-brand-black">{product.name}</span>
         </nav>
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">

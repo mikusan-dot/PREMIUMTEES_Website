@@ -10,7 +10,7 @@ export const productSchema = z.object({
   fabric: z.string().optional(),
   gsm: z.number().nonnegative().optional(),
   fit: z.string().optional(),
-  categoryIds: z.array(z.string()).default([]),
+  categoryIds: z.array(z.string()).min(1, 'Choose at least one category').default([]),
   collectionIds: z.array(z.string()).default([]),
   images: z.array(z.string()).default([]),
   variants: z.array(z.object({
@@ -27,6 +27,10 @@ export const productSchema = z.object({
   saleEndsAt: z.string().optional().nullable(),
   limitedEndsAt: z.string().optional().nullable(),
 });
+
+// Updates (including archive/restore of older products) must not be blocked by legacy products that
+// were saved before categories became mandatory.
+export const productUpdateSchema = productSchema.extend({ categoryIds: z.array(z.string()).default([]) });
 
 export const orderSchema = z.object({
   customer: z.object({
@@ -78,12 +82,15 @@ export const collectionSchema = z.object({
 });
 
 export const categorySchema = z.object({
-  name: z.string().min(2),
-  slug: z.string().min(2),
-  description: z.string().optional(),
-  image: z.string().optional().nullable(),
+  name: z.string().trim().min(2).max(60),
+  slug: z.string().trim().min(2).max(60),
+  description: z.string().max(400).optional(),
+  image: z.string().optional().nullable(), // thumbnail
+  bannerImage: z.string().optional().nullable(),
   isActive: z.boolean().default(true),
   sortOrder: z.number().default(0),
+  seoTitle: z.string().max(70).optional(),
+  seoDescription: z.string().max(170).optional(),
 });
 
 export const settingsSchema = z.object({

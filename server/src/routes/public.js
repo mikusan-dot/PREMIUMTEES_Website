@@ -18,6 +18,7 @@ router.get('/collections/:slug', collectionController.getBySlug);
 
 // Public categories
 router.get('/categories', categoryController.list);
+router.get('/categories/:slug', categoryController.getBySlug);
 
 // Public settings
 router.get('/settings/public', settingsController.getPublic);

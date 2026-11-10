@@ -1,6 +1,8 @@
 import { db } from './db.js';
 import { nanoid } from 'nanoid';
 
+import { DEFAULT_CATEGORIES } from '../data/defaultCategories.js';
+
 const COLLECTIONS = {
   PRODUCTS: 'products',
   CATEGORIES: 'categories',
@@ -35,30 +37,33 @@ const logAction = async ({ adminId, adminName, action, target, details }) => {
 };
 
 // ---------- Products ----------
+const saleLive = (p, nowMs = Date.now()) => {
+  const price = Number(p.price) || 0;
+  const sale = Number(p.salePrice) || 0;
+  if (!(sale > 0 && sale < price)) return false;
+  const end = p.saleEndsAt ? new Date(p.saleEndsAt).getTime() : null;
+  return end === null || Number.isNaN(end) || end > nowMs;
+};
+
 export const productController = {
   list: async (req, res) => {
     try {
-      const { featured, category, status = 'active' } = req.query;
-      const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 200);
-      const newArrivals = req.query.newArrivals === 'true' || req.query['new-arrivals'] === 'true';
-      const bestSellers = req.query.bestSellers === 'true' || req.query['best-sellers'] === 'true';
-      // Sorted/filtered views are computed in memory so no Firestore composite index is required.
-      const fetchLimit = newArrivals || bestSellers ? 200 : limit;
+      const q = req.query;
+      const status = q.status || 'active';
+      const pageSize = Math.min(Math.max(parseInt(q.limit, 10) || 20, 1), 100);
+      const page = Math.max(parseInt(q.page, 10) || 1, 1);
+      const newArrivals = q.newArrivals === 'true' || q['new-arrivals'] === 'true';
+      const bestSellers = q.bestSellers === 'true' || q['best-sellers'] === 'true';
+      const csv = (value) => String(value || '').split(',').map((v) => v.trim().toLowerCase()).filter(Boolean);
 
       let products = [];
       if (process.env.DEV_MODE === 'true') {
-        const snap = await db.collection(COLLECTIONS.PRODUCTS).query(
-          (d) => d.status === status,
-          { orderBy: 'desc', field: 'createdAt', limit: fetchLimit }
-        );
+        const snap = await db.collection(COLLECTIONS.PRODUCTS).query((d) => d.status === status, { orderBy: 'desc', field: 'createdAt', limit: 500 });
         products = snap.map((d) => d.data());
       } else {
-        let q = db.collection(COLLECTIONS.PRODUCTS).where('status', '==', status);
-        if (featured === 'true') q = q.where('featured', '==', true);
-        const snap = await q.limit(fetchLimit).get();
+        const snap = await db.collection(COLLECTIONS.PRODUCTS).where('status', '==', status).limit(500).get();
         products = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       }
-      if (category) products = products.filter((p) => p.categoryIds && p.categoryIds.includes(category));
 
       // Never return the same product twice (duplicate documents / repeated seeds).
       const seen = new Set();
@@ -69,17 +74,66 @@ export const productController = {
         return true;
       });
 
+      const nowMs = Date.now();
+      const priceOf = (p) => (saleLive(p, nowMs) ? Number(p.salePrice) : Number(p.price) || 0);
       const created = (p) => new Date(p.createdAt || 0).getTime() || 0;
-      if (newArrivals) {
-        products.sort((a, b) => created(b) - created(a));
-      } else if (bestSellers) {
+
+      // Base set: scope filters (category / featured / sale / search). Facets are computed from
+      // this set so the filter UI always offers options that exist in the category.
+      let base = products;
+      if (q.category) base = base.filter((p) => (p.categoryIds || []).includes(q.category));
+      if (q.collection) base = base.filter((p) => (p.collectionIds || []).includes(q.collection));
+      if (q.featured === 'true') base = base.filter((p) => p.featured);
+      if (q.onSale === 'true') base = base.filter((p) => saleLive(p, nowMs));
+      const term = String(q.q || '').trim().toLowerCase();
+      if (term) {
+        base = base.filter((p) =>
+          [p.name, p.sku, p.fit, p.fabric, ...(p.categoryIds || [])].filter(Boolean).some((v) => String(v).toLowerCase().includes(term)));
+      }
+
+      const variantsOf = (p) => (Array.isArray(p.variants) ? p.variants : []);
+      const colorsOf = (p) => [...new Set(variantsOf(p).map((v) => v.color).filter(Boolean))];
+      const sizesOf = (p) => [...new Set(variantsOf(p).map((v) => v.size).filter(Boolean))];
+      const facetColors = [...new Set(base.flatMap(colorsOf))].sort();
+      const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+      const facetSizes = [...new Set(base.flatMap(sizesOf))].sort((a, b) => {
+        const ia = SIZE_ORDER.indexOf(String(a).toUpperCase());
+        const ib = SIZE_ORDER.indexOf(String(b).toUpperCase());
+        return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) || String(a).localeCompare(String(b));
+      });
+      const prices = base.map(priceOf).filter((n) => n > 0);
+      const facets = { colors: facetColors, sizes: facetSizes, minPrice: prices.length ? Math.min(...prices) : 0, maxPrice: prices.length ? Math.max(...prices) : 0 };
+
+      let list = base;
+      const minPrice = Number(q.minPrice);
+      const maxPrice = Number(q.maxPrice);
+      if (Number.isFinite(minPrice) && q.minPrice !== undefined && q.minPrice !== '') list = list.filter((p) => priceOf(p) >= minPrice);
+      if (Number.isFinite(maxPrice) && q.maxPrice !== undefined && q.maxPrice !== '') list = list.filter((p) => priceOf(p) <= maxPrice);
+      const wantSizes = csv(q.size || q.sizes);
+      if (wantSizes.length) list = list.filter((p) => variantsOf(p).some((v) => wantSizes.includes(String(v.size).toLowerCase()) && Number(v.stock) > 0));
+      const wantColors = csv(q.color || q.colors);
+      if (wantColors.length) list = list.filter((p) => variantsOf(p).some((v) => wantColors.includes(String(v.color).toLowerCase()) && Number(v.stock) > 0));
+
+      const sort = q.sort || (newArrivals ? 'newest' : bestSellers ? 'popular' : 'featured');
+      if (bestSellers) {
         // Real sales first (soldCount is incremented on every order); the manual
         // "best seller" flag only fills the gaps until sales data exists.
-        products = products
-          .filter((p) => Number(p.soldCount) > 0 || p.bestSeller)
-          .sort((a, b) => (Number(b.soldCount) || 0) - (Number(a.soldCount) || 0) || created(b) - created(a));
+        list = list.filter((p) => Number(p.soldCount) > 0 || p.bestSeller);
       }
-      res.json({ products: products.slice(0, limit) });
+      const sorters = {
+        newest: (a, b) => created(b) - created(a),
+        'price-asc': (a, b) => priceOf(a) - priceOf(b),
+        'price-desc': (a, b) => priceOf(b) - priceOf(a),
+        name: (a, b) => String(a.name).localeCompare(String(b.name)),
+        popular: (a, b) => (Number(b.soldCount) || 0) - (Number(a.soldCount) || 0) || created(b) - created(a),
+        featured: (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || created(b) - created(a),
+      };
+      list = [...list].sort(sorters[sort] || sorters.featured);
+
+      const total = list.length;
+      const pages = Math.max(Math.ceil(total / pageSize), 1);
+      const start = (page - 1) * pageSize;
+      res.json({ products: list.slice(start, start + pageSize), total, page, pages, facets });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -162,21 +216,79 @@ export const productController = {
 };
 
 // ---------- Categories ----------
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const readAllCategories = async () => {
+  if (process.env.DEV_MODE === 'true') {
+    const snap = await db.collection(COLLECTIONS.CATEGORIES).query(() => true);
+    return snap.map((d) => d.data());
+  }
+  const snap = await db.collection(COLLECTIONS.CATEGORIES).get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+// Every product, archived ones included — used when categories are renamed or deleted so that
+// nothing is left pointing at a category that no longer exists.
+const readEveryProduct = async () => {
+  if (process.env.DEV_MODE === 'true') {
+    const snap = await db.collection(COLLECTIONS.PRODUCTS).query(() => true);
+    return snap.map((d) => d.data());
+  }
+  const snap = await db.collection(COLLECTIONS.PRODUCTS).limit(1000).get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+const byOrder = (a, b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0) || String(a.name).localeCompare(String(b.name));
+
+let defaultsChecked = false;
+// A brand-new store has no categories; create the five defaults once so navigation is never empty.
+const ensureDefaultCategories = async () => {
+  if (defaultsChecked) return;
+  const existing = await readAllCategories();
+  if (existing.length === 0) {
+    const now = new Date().toISOString();
+    for (const category of DEFAULT_CATEGORIES) {
+      await db.collection(COLLECTIONS.CATEGORIES).add({ ...category, createdAt: now, updatedAt: now });
+    }
+  }
+  defaultsChecked = true;
+};
+
+const withCounts = (categories, products) =>
+  categories.map((c) => ({ ...c, productCount: products.filter((p) => (p.categoryIds || []).includes(c.slug)).length }));
+
 export const categoryController = {
+  // Public: active categories in display order, with live product counts.
   list: async (req, res) => {
     try {
-      let categories = [];
-      if (process.env.DEV_MODE === 'true') {
-        const snap = await db.collection(COLLECTIONS.CATEGORIES).query(
-          (d) => d.isActive !== false,
-          { orderBy: 'asc', field: 'sortOrder' }
-        );
-        categories = snap.map((d) => d.data());
-      } else {
-        const snap = await db.collection(COLLECTIONS.CATEGORIES).where('isActive', '==', true).orderBy('sortOrder', 'asc').get();
-        categories = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      }
+      await ensureDefaultCategories();
+      const [all, products] = await Promise.all([readAllCategories(), readActiveProducts()]);
+      const categories = withCounts(all.filter((c) => c.isActive !== false).sort(byOrder), products);
       res.json({ categories });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getBySlug: async (req, res) => {
+    try {
+      await ensureDefaultCategories();
+      const [all, products] = await Promise.all([readAllCategories(), readActiveProducts()]);
+      const category = all.find((c) => c.slug === req.params.slug && c.isActive !== false);
+      if (!category) return res.status(404).json({ error: 'Category not found' });
+      const [withCount] = withCounts([category], products);
+      res.json({ category: withCount });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  adminList: async (req, res) => {
+    try {
+      await ensureDefaultCategories();
+      const [all, products] = await Promise.all([readAllCategories(), readEveryProduct()]);
+      const missingDefaults = DEFAULT_CATEGORIES.filter((d) => !all.some((c) => c.slug === d.slug)).map((d) => d.name);
+      res.json({ categories: withCounts(all.sort(byOrder), products.filter((p) => p.status !== 'archived')), missingDefaults });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -185,8 +297,13 @@ export const categoryController = {
   create: async (req, res) => {
     try {
       const data = req.validated;
+      if (!SLUG_RE.test(data.slug)) return res.status(400).json({ error: 'Slug may only contain lowercase letters, numbers and single hyphens' });
+      const all = await readAllCategories();
+      if (all.some((c) => c.slug === data.slug)) return res.status(409).json({ error: 'A category with this slug already exists' });
+      if (all.some((c) => String(c.name).trim().toLowerCase() === data.name.trim().toLowerCase())) return res.status(409).json({ error: 'A category with this name already exists' });
       const now = new Date().toISOString();
-      const doc = await db.collection(COLLECTIONS.CATEGORIES).add({ ...data, createdAt: now, updatedAt: now });
+      const sortOrder = data.sortOrder || (all.length ? Math.max(...all.map((c) => Number(c.sortOrder) || 0)) + 10 : 10);
+      const doc = await db.collection(COLLECTIONS.CATEGORIES).add({ ...data, sortOrder, createdAt: now, updatedAt: now });
       await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'category_created', target: `categories/${doc.id}`, details: data });
       res.status(201).json({ id: doc.id, message: 'Category created' });
     } catch (err) {
@@ -197,7 +314,22 @@ export const categoryController = {
   update: async (req, res) => {
     try {
       const data = req.validated;
-      await db.collection(COLLECTIONS.CATEGORIES).doc(req.params.id).set({ ...data, updatedAt: new Date().toISOString() }, { merge: true });
+      if (!SLUG_RE.test(data.slug)) return res.status(400).json({ error: 'Slug may only contain lowercase letters, numbers and single hyphens' });
+      const all = await readAllCategories();
+      const previous = all.find((c) => c.id === req.params.id);
+      if (!previous) return res.status(404).json({ error: 'Category not found' });
+      if (all.some((c) => c.id !== previous.id && c.slug === data.slug)) return res.status(409).json({ error: 'A category with this slug already exists' });
+      if (all.some((c) => c.id !== previous.id && String(c.name).trim().toLowerCase() === data.name.trim().toLowerCase())) return res.status(409).json({ error: 'A category with this name already exists' });
+      const now = new Date().toISOString();
+      await db.collection(COLLECTIONS.CATEGORIES).doc(previous.id).set({ ...data, updatedAt: now }, { merge: true });
+      // Products reference categories by slug, so keep them attached when the slug changes.
+      if (previous.slug !== data.slug) {
+        const products = (await readEveryProduct()).filter((p) => (p.categoryIds || []).includes(previous.slug));
+        for (const p of products) {
+          const categoryIds = [...new Set(p.categoryIds.map((slug) => (slug === previous.slug ? data.slug : slug)))];
+          await db.collection(COLLECTIONS.PRODUCTS).doc(p.id).set({ categoryIds, updatedAt: now }, { merge: true });
+        }
+      }
       await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'category_updated', target: `categories/${req.params.id}`, details: data });
       res.json({ message: 'Category updated' });
     } catch (err) {
@@ -205,27 +337,62 @@ export const categoryController = {
     }
   },
 
-  delete: async (req, res) => {
+  // Body: { order: [id, id, ...] } — new display order, first = shown first.
+  reorder: async (req, res) => {
     try {
-      await db.collection(COLLECTIONS.CATEGORIES).doc(req.params.id).delete();
-      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'category_deleted', target: `categories/${req.params.id}` });
-      res.json({ message: 'Category deleted' });
+      const order = Array.isArray(req.body?.order) ? req.body.order.filter((id) => typeof id === 'string') : [];
+      if (order.length === 0) return res.status(400).json({ error: 'Provide the category ids in the new order' });
+      const now = new Date().toISOString();
+      for (let i = 0; i < order.length; i += 1) {
+        await db.collection(COLLECTIONS.CATEGORIES).doc(order[i]).set({ sortOrder: (i + 1) * 10, updatedAt: now }, { merge: true });
+      }
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'categories_reordered', target: 'categories', details: { order } });
+      res.json({ message: 'Order saved' });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   },
 
-  adminList: async (req, res) => {
+  // Query: ?reassignTo=<slug> moves the category's products into another category first.
+  // Without it the slug is simply removed; products stay live and reachable through Shop and search.
+  delete: async (req, res) => {
     try {
-      let categories = [];
-      if (process.env.DEV_MODE === 'true') {
-        const snap = await db.collection(COLLECTIONS.CATEGORIES).query(() => true, { orderBy: 'asc', field: 'sortOrder' });
-        categories = snap.map((d) => d.data());
-      } else {
-        const snap = await db.collection(COLLECTIONS.CATEGORIES).orderBy('sortOrder', 'asc').get();
-        categories = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const all = await readAllCategories();
+      const existing = all.find((c) => c.id === req.params.id);
+      if (!existing) return res.status(404).json({ error: 'Category not found' });
+      const reassignTo = String(req.query.reassignTo || '').trim();
+      if (reassignTo) {
+        if (reassignTo === existing.slug) return res.status(400).json({ error: 'Choose a different category to move the products into' });
+        if (!all.some((c) => c.slug === reassignTo)) return res.status(400).json({ error: 'The category to move products into does not exist' });
       }
-      res.json({ categories });
+      const now = new Date().toISOString();
+      const products = (await readEveryProduct()).filter((p) => (p.categoryIds || []).includes(existing.slug));
+      for (const p of products) {
+        const rest = p.categoryIds.filter((slug) => slug !== existing.slug);
+        const categoryIds = reassignTo ? [...new Set([...rest, reassignTo])] : rest;
+        await db.collection(COLLECTIONS.PRODUCTS).doc(p.id).set({ categoryIds, updatedAt: now }, { merge: true });
+      }
+      await db.collection(COLLECTIONS.CATEGORIES).doc(existing.id).delete();
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'category_deleted', target: `categories/${existing.id}`, details: { slug: existing.slug, reassignTo: reassignTo || null, products: products.length } });
+      res.json({ message: 'Category deleted', productsAffected: products.length, reassignedTo: reassignTo || null });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  // Adds any of the five default categories that are missing (never touches existing ones).
+  seedDefaults: async (req, res) => {
+    try {
+      const all = await readAllCategories();
+      const now = new Date().toISOString();
+      const added = [];
+      for (const category of DEFAULT_CATEGORIES) {
+        if (all.some((c) => c.slug === category.slug)) continue;
+        await db.collection(COLLECTIONS.CATEGORIES).add({ ...category, createdAt: now, updatedAt: now });
+        added.push(category.name);
+      }
+      defaultsChecked = true;
+      res.json({ message: added.length ? `Added ${added.join(', ')}` : 'All default categories already exist', added });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

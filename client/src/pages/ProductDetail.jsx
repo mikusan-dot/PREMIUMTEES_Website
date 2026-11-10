@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Heart, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Heart, Minus, Plus, ShoppingBag, ZoomIn } from 'lucide-react';
 import { api } from '@/services/api';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
@@ -12,6 +12,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { ProductCard } from '@/components/product/ProductCard';
 import { GridMessage } from '@/components/product/ProductListingPage';
 import { Button } from '@/components/ui/button';
+import { Modal } from '@/components/ui/modal';
 import { cn } from '@/lib/utils';
 
 const PLACEHOLDER = 'https://images.pexels.com/photos/8532616/pexels-photo-8532616.jpeg?auto=compress&cs=tinysrgb&w=800';
@@ -71,6 +72,7 @@ export const ProductDetail = () => {
   const [size, setSize] = useState(null);
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const [added, setAdded] = useState(false);
   const now = useNow(product ? nextCampaignEnd(product) !== null : false);
 
@@ -86,6 +88,7 @@ export const ProductDetail = () => {
     setSize(first?.size ?? sizes[0] ?? null);
     setQty(1);
     setActiveImage(0);
+    setZoomOpen(false);
     window.scrollTo({ top: 0 });
   }, [product]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -183,14 +186,27 @@ export const ProductDetail = () => {
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
           <div className="space-y-3">
-            <div className="relative aspect-square overflow-hidden rounded-lg border border-brand-border bg-brand-offwhite sm:aspect-[4/5]">
-              <img
-                src={images[activeImage] || PLACEHOLDER}
-                alt={product.name}
-                onError={(e) => { e.currentTarget.src = PLACEHOLDER; e.currentTarget.onerror = null; }}
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+            <div className="relative aspect-square overflow-hidden rounded-lg border border-brand-border bg-brand-white sm:aspect-[4/5]">
+              <button
+                type="button"
+                onClick={() => setZoomOpen(true)}
+                aria-label={`Zoom ${product.name} image`}
+                className="group flex h-full w-full cursor-zoom-in items-center justify-center p-4 sm:p-6"
+              >
+                <img
+                  src={images[activeImage] || PLACEHOLDER}
+                  alt={product.name}
+                  loading="eager"
+                  decoding="async"
+                  onError={(e) => { e.currentTarget.src = PLACEHOLDER; e.currentTarget.onerror = null; }}
+                  className="h-full w-full object-contain object-center"
+                />
+                <span className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-brand-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-black opacity-100 shadow-sm backdrop-blur transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100">
+                  <ZoomIn className="h-3.5 w-3.5" />
+                  Zoom
+                </span>
+              </button>
+              <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
                 {discount > 0 && <span className="bg-[#dc2626] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">-{discount}%</span>}
                 {badges.filter((b) => b.key !== 'low-stock').slice(0, 2).map((b) => (
                   <span key={b.key} className={cn('px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]', b.tone === 'red' && 'bg-[#dc2626] text-white', b.tone === 'accent' && 'bg-brand-accent text-white', b.tone === 'ink' && 'bg-brand-black text-brand-white', b.tone === 'dark' && 'bg-neutral-800 text-white')}>
@@ -207,13 +223,35 @@ export const ProductDetail = () => {
                     type="button"
                     onClick={() => setActiveImage(i)}
                     aria-label={`Show image ${i + 1}`}
-                    className={cn('aspect-square overflow-hidden rounded-md border-2 bg-brand-offwhite', activeImage === i ? 'border-brand-accent' : 'border-transparent')}
+                    aria-pressed={activeImage === i}
+                    className={cn('flex aspect-square items-center justify-center overflow-hidden rounded-md border-2 bg-brand-white p-1.5', activeImage === i ? 'border-brand-accent' : 'border-transparent')}
                   >
-                    <img src={img} alt="" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.src = PLACEHOLDER; e.currentTarget.onerror = null; }} />
+                    <img
+                      src={img}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-contain object-center"
+                      onError={(e) => { e.currentTarget.src = PLACEHOLDER; e.currentTarget.onerror = null; }}
+                    />
                   </button>
                 ))}
               </div>
             )}
+
+            <Modal
+              open={zoomOpen}
+              onOpenChange={() => setZoomOpen(false)}
+              aria-label={`${product.name} image preview`}
+              className="max-w-6xl gap-0 border-brand-border bg-brand-white p-2 pt-14 sm:max-w-6xl sm:p-4 sm:pt-14"
+            >
+              <img
+                src={images[activeImage] || PLACEHOLDER}
+                alt={product.name}
+                className="mx-auto max-h-[85vh] w-full object-contain object-center"
+                onError={(e) => { e.currentTarget.src = PLACEHOLDER; e.currentTarget.onerror = null; }}
+              />
+            </Modal>
           </div>
 
           <div className="space-y-7">

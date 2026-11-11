@@ -195,7 +195,7 @@ export const productController = {
   update: async (req, res) => {
     try {
       const data = req.validated;
-      if (await slugTaken(data.slug, req.params.id)) {
+      if (data.status !== 'archived' && await slugTaken(data.slug, req.params.id)) {
         return res.status(409).json({ error: `Another product already uses the slug "${data.slug}". Use a different slug.` });
       }
       await db.collection(COLLECTIONS.PRODUCTS).doc(req.params.id).set({ ...data, updatedAt: new Date().toISOString() }, { merge: true });

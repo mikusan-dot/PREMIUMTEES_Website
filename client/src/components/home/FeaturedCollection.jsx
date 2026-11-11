@@ -31,7 +31,7 @@ export const FeaturedCollection = () => {
       isLoading={isLoading}
       viewAllHref={`/collections/${featured.slug}`}
       viewAllLabel="View collection"
-      className="border-t border-brand-border bg-brand-white"
+      className="border-t border-white/10 dark:border-white/10 bg-brand-white"
     />
   );
 };

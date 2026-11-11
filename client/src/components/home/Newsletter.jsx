@@ -33,11 +33,11 @@ export const Newsletter = () => {
   };
 
   return (
-    <section id="newsletter" className="bg-brand-night py-20 text-white md:py-28">
+    <section id="newsletter" className="bg-brand-night py-24 text-white md:py-32 animate-fade-up delay-500">
       <div className="container-premium">
-        <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+        <div className="grid gap-12 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-6">
-            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/50">The List</p>
+            <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.32em] text-white/50">The List</p>
             <h2 className="max-w-lg font-serif text-4xl leading-[1.05] text-white md:text-5xl">
               First access.
               <br />
@@ -45,11 +45,11 @@ export const Newsletter = () => {
             </h2>
           </div>
           <div className="lg:col-span-6 lg:pl-10">
-            <p className="mb-6 max-w-md text-sm leading-relaxed text-white/60">
+            <p className="mb-8 max-w-md text-sm leading-relaxed text-white/60">
               Early access to limited drops, restocks, and studio notes. One considered email, nothing more.
             </p>
             <form onSubmit={handleSubmit(subscribe)} noValidate className="max-w-md">
-              <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <div className="flex-1">
                   <label htmlFor="newsletter-email" className="sr-only">Email address</label>
                   <input
@@ -65,7 +65,7 @@ export const Newsletter = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex h-12 items-center justify-center gap-2 bg-white px-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-night transition-colors hover:bg-white/85 disabled:opacity-60"
+                  className="inline-flex h-12 items-center justify-center gap-2 bg-white px-7 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-night transition-colors hover:bg-white/90 disabled:opacity-60"
                 >
                   {isSubmitting ? 'Joining...' : 'Subscribe'}
                   {!isSubmitting && <ArrowRight className="h-4 w-4" />}
@@ -73,12 +73,12 @@ export const Newsletter = () => {
               </div>
               {errors.email && <p className="mt-2 text-xs text-red-300">{errors.email.message}</p>}
               {status && (
-                <p className={`mt-3 flex items-center gap-1.5 text-xs ${status.type === 'success' ? 'text-emerald-300' : 'text-red-300'}`}>
+                <p className={`mt-4 flex items-center gap-1.5 text-xs ${status.type === 'success' ? 'text-emerald-300' : 'text-red-300'}`}>
                   {status.type === 'success' && <Check className="h-3.5 w-3.5" />}
                   {status.text}
                 </p>
               )}
-              <p className="mt-4 text-[11px] text-white/35">No spam. Unsubscribe anytime.</p>
+              <p className="mt-6 text-[10px] text-white/35">No spam. Unsubscribe anytime.</p>
             </form>
           </div>
         </div>

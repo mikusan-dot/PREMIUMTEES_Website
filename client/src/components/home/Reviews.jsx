@@ -34,11 +34,11 @@ export const Reviews = () => {
   return (
     <section id="reviews" className="bg-brand-offwhite py-16 md:py-24">
       <div className="container-premium">
-        <div className="mb-10 flex flex-col gap-5 border-b border-brand-border pb-7 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-12 flex flex-col gap-6 border-b border-white/10 dark:border-white/10 pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-brand-accent">In their words</p>
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.32em] text-brand-accent">In their words</p>
             <h2 className="text-3xl leading-tight tracking-tight text-brand-black md:text-4xl">Worn and reviewed.</h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-brand-muted">
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-brand-muted">
               Real feedback from verified customers who wear Unhinged Co.
             </p>
           </div>
@@ -49,15 +49,15 @@ export const Reviews = () => {
           </div>
         </div>
 
-        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+        <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0">
           {reviews.map((review, index) => {
             const rating = getRating(review);
             return (
               <figure
                 key={review.id || `${getName(review)}-${index}`}
-                className="min-w-[85%] snap-start border border-brand-border bg-brand-white p-6 sm:min-w-[60%] md:min-w-0"
+                className="min-w-[82%] snap-start border border-white/10 dark:border-white/10 bg-brand-white rounded-2xl p-6 shadow-none sm:min-w-[58%] md:min-w-0 transition-colors hover:border-white/20 dark:hover:border-white/20"
               >
-                <div className="mb-5 flex items-center justify-between gap-3">
+                <div className="mb-6 flex items-center justify-between gap-3">
                   <Stars rating={rating} />
                   <span className="font-serif text-4xl leading-none text-brand-border">&rdquo;</span>
                 </div>
@@ -65,7 +65,7 @@ export const Reviews = () => {
                   {review.title && <p className="mb-2 font-semibold text-brand-black">{review.title}</p>}
                   <p>{getText(review)}</p>
                 </blockquote>
-                <figcaption className="mt-6 border-t border-brand-border/80 pt-4">
+                <figcaption className="mt-6 border-t border-white/20 dark:border-white/20 pt-4">
                   <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-black">
                     {getName(review)}
                     {(review.verified === true || review.isVerified === true) && (

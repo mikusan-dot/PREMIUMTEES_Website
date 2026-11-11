@@ -36,16 +36,19 @@ const productImage = (product) => product?.images?.find(Boolean) || '';
 const LookTile = ({ product, className, priority = false }) => (
     <Link
       to={`/product/${product.id}`}
-      className={cn('group relative block overflow-hidden bg-brand-offwhite dark:bg-[#202020]', className)}
+      className={cn(
+        'group relative block overflow-hidden rounded-xl border border-white/10 dark:border-white/10 bg-brand-offwhite dark:bg-[#202020] shadow-none hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.20)] transition-all duration-300',
+        className,
+      )}
   >
     <img
       src={productImage(product)}
       alt={product.name}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
-                className="h-full w-full object-contain object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                className="h-full w-full object-contain object-center transition-transform duration-700 ease-out group-hover:scale-[1.02]"
     />
-    <div className="absolute inset-0 bg-gradient-to-t from-brand-night/80 via-brand-night/15 to-transparent" />
+    <div className="absolute inset-0 bg-gradient-to-t from-brand-night/70 via-brand-night/15 to-transparent" />
     <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 md:p-6">
       <div className="min-w-0">
         <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.24em] text-white/60">Shop the look</p>
@@ -102,52 +105,57 @@ export const Home = () => {
   return (
     <>
       <section className="overflow-hidden bg-brand-offwhite">
-        <div className="container-premium grid items-center gap-10 py-12 sm:py-16 lg:grid-cols-12 lg:gap-12 lg:py-20">
+        <div className="container-premium grid items-start gap-10 py-12 sm:py-16 lg:grid-cols-12 lg:gap-14 lg:py-24">
           <div className="lg:col-span-6 xl:col-span-5">
-            <p className="mb-5 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-accent">
-              <span className="h-px w-8 bg-brand-accent" />
-              Unhinged Co. · Streetwear
-            </p>
-            <h1 className="font-serif text-[3.15rem] leading-[0.92] tracking-[-0.03em] text-brand-black sm:text-6xl md:text-7xl xl:text-[5.5rem]">
-              Wear without
-              <br />
-              <em className="font-normal italic">limits.</em>
-            </h1>
-            <p className="mt-7 max-w-md text-base leading-relaxed text-brand-charcoal/75">
-              Premium streetwear built in Bangladesh. Heavyweight fabric, bold cuts and
-              clean design for people who don’t play by the rules.
-            </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link
-                to="/shop"
-                className="group inline-flex items-center justify-center gap-3 whitespace-nowrap bg-brand-black px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-white transition-colors hover:bg-brand-charcoal"
-              >
-                Explore Collection
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
-              <Link
-                to="/new-arrivals"
-                className="inline-flex items-center justify-center whitespace-nowrap border border-brand-black px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-black transition-colors hover:bg-brand-black hover:text-brand-white"
-              >
-                Shop New Arrivals
-              </Link>
-            </div>
-            <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-2 text-[9px] font-medium uppercase tracking-[0.14em] text-brand-muted sm:text-[10px] sm:tracking-[0.16em]">
-              <span>Considered fits</span>
-              <span>Quality cotton</span>
-              <span>Made for everyday</span>
+            <div className="animate-fade-up delay-100">
+              <p className="mb-4 flex items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.3em] text-brand-accent">
+                <span className="h-px w-6 bg-brand-accent" />
+                Unhinged Co. · Streetwear
+              </p>
+              <h1 className="font-serif text-[3.15rem] leading-[0.92] tracking-[-0.03em] text-brand-black sm:text-6xl md:text-7xl xl:text-[5.5rem]">
+                Wear without
+                <br />
+                <em className="font-normal italic">limits.</em>
+              </h1>
+              <p className="mt-6 max-w-md text-base leading-relaxed text-brand-charcoal/80">
+                Premium streetwear built in Bangladesh. Heavyweight fabric, bold cuts and
+                clean design for people who don’t play by the rules.
+              </p>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-start">
+                <Link
+                  to="/shop"
+                  className="group inline-flex items-center justify-center gap-3 whitespace-nowrap bg-brand-black px-9 py-4.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-white transition-colors hover:bg-brand-charcoal"
+                >
+                  Explore Collection
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  to="/new-arrivals"
+                  className="inline-flex items-center justify-center whitespace-nowrap border border-brand-black bg-transparent px-9 py-4.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-black transition-colors hover:bg-brand-black hover:text-brand-white"
+                >
+                  Shop New Arrivals
+                </Link>
+              </div>
+              <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 text-[9px] font-medium uppercase tracking-[0.16em] text-brand-muted sm:text-[10px]">
+                <span>Considered fits</span>
+                <span>Quality cotton</span>
+                <span>Made for everyday</span>
+              </div>
             </div>
           </div>
 
-          <div className="relative lg:col-span-6 xl:col-span-7">
-            <div className="relative h-[420px] overflow-hidden bg-brand-white sm:h-[520px] lg:ml-auto lg:h-[610px] lg:max-w-[560px] xl:h-[660px] xl:max-w-[600px]">
+          <div className="relative lg:col-span-6 xl:col-span-7 animate-fade-up delay-200">
+            <div
+              className="relative overflow-hidden bg-brand-white rounded-2xl shadow-[0_24px_48px_-20px_rgba(0,0,0,0.12)] sm:aspect-video lg:ml-auto lg:max-w-[560px] xl:max-w-[600px]"
+              style={{ aspectRatio: 4 / 5 }}
+            >
               {/* Soft blurred copy fills the frame so the full product photo can be shown uncropped. */}
               <img
                 src={heroImage}
                 alt=""
                 aria-hidden="true"
                 decoding="async"
-                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-2xl"
+                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl"
               />
               <img
                 src={heroImage}
@@ -158,17 +166,17 @@ export const Home = () => {
                   event.currentTarget.src = HERO_IMAGE;
                   event.currentTarget.onerror = null;
                 }}
-                className="relative h-full w-full object-contain"
+                className="relative h-full w-full object-contain object-center"
               />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-night/20 via-transparent to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-night/25 via-transparent to-transparent" />
               {featuredProduct && (
                 <Link
                   to={`/product/${featuredProduct.id}`}
-                  className="absolute bottom-4 left-4 right-4 bg-brand-white/95 p-4 backdrop-blur transition-colors hover:bg-brand-white sm:right-auto sm:max-w-[250px]"
+                  className="absolute left-1/2 bottom-6 -translate-x-1/2 bg-white/95 dark:bg-[#1B1B1B]/95 backdrop-blur-md border border-white/20 dark:border-white/10 p-4 rounded-2xl shadow-lg transition-colors hover:bg-white dark:hover:bg-[#242424] max-w-[260px] w-full text-center"
                 >
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-brand-accent">Featured piece</p>
-                  <p className="mt-1.5 truncate font-serif text-lg text-brand-black">{featuredProduct.name}</p>
-                  <p className="mt-1 flex items-center justify-between gap-3 text-xs text-brand-muted">
+                  <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.24em] text-brand-accent">Featured piece</p>
+                  <p className="truncate font-serif text-lg text-brand-black md:text-xl">{featuredProduct.name}</p>
+                  <p className="mt-2 flex items-center justify-center gap-2 text-xs text-brand-muted">
                     <span>{money(currentPrice(featuredProduct))}</span>
                     <span className="inline-flex items-center gap-1 font-semibold uppercase tracking-[0.14em] text-brand-black">
                       Shop
@@ -178,7 +186,7 @@ export const Home = () => {
                 </Link>
               )}
             </div>
-            <p className="mt-4 hidden text-right text-[9px] font-medium uppercase tracking-[0.28em] text-brand-muted lg:block">
+            <p className="mt-6 hidden text-right text-[9px] font-medium uppercase tracking-[0.28em] text-brand-muted lg:block">
               Designed in Dhaka · Delivered nationwide
             </p>
           </div>
@@ -202,7 +210,7 @@ export const Home = () => {
         </div>
       )}
 
-      <section className="border-y border-brand-border bg-brand-white" aria-label="Shopping benefits">
+      <section className="border-y border-white/10 dark:border-white/10 bg-brand-white" aria-label="Shopping benefits">
         <ul className="container-premium grid grid-cols-2 gap-x-4 lg:grid-cols-4">
           {BENEFITS.map(({ icon: Icon, title, text }) => (
             <li key={title} className="flex items-center gap-3 py-5 lg:py-6">
@@ -218,14 +226,14 @@ export const Home = () => {
 
       <section className="bg-brand-offwhite py-16 md:py-24" id="shop-by-category">
         <div className="container-premium">
-          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-brand-accent">Shop by category</p>
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.32em] text-brand-accent">Shop by category</p>
               <h2 className="text-3xl leading-tight tracking-tight text-brand-black md:text-4xl">Find your fit.</h2>
             </div>
             <Link
               to="/categories"
-              className="group inline-flex min-h-[44px] items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-black"
+              className="group inline-flex min-h-[44px] items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-black"
             >
               View all categories
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -234,37 +242,41 @@ export const Home = () => {
 
           {categoriesLoading ? (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5">
-              {Array.from({ length: 5 }).map((_, i) => <div key={i} className="aspect-[4/5] animate-pulse bg-brand-white" />)}
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="aspect-[4/5] animate-pulse rounded-xl bg-[#202020] dark:bg-[#202020]" />
+              ))}
             </div>
           ) : shownCategories.length === 0 ? (
-            <div className="border border-dashed border-brand-border bg-brand-white px-6 py-12 text-center text-sm text-brand-muted">
+            <div className="border border-dashed border-white/20 dark:border-white/20 bg-[#1B1B1B] dark:bg-[#1B1B1B] px-8 py-16 text-center rounded-2xl">
               Categories are on the way. <Link to="/shop" className="font-semibold text-brand-black underline">Browse everything</Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5">
+            <div className="grid gap-y-8 gap-x-6 md:gap-8 lg:gap-x-10 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {shownCategories.map((category) => (
                 <Link
                   key={category.slug}
                   to={`/category/${category.slug}`}
-                  className="group relative block aspect-[4/5] overflow-hidden bg-brand-white"
+                  className="group relative block overflow-hidden rounded-xl bg-brand-white border-0 dark:border-0 border-white/5 dark:border-white/5 shadow-none hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.25)] transition-all duration-300"
                 >
-                  <img
-                    src={category.image || FALLBACK_CATEGORY_IMAGE}
-                    alt={category.name}
-                    loading="lazy"
-                    decoding="async"
-                    onError={(e) => { e.currentTarget.src = FALLBACK_CATEGORY_IMAGE; e.currentTarget.onerror = null; }}
-                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
-                  />
-                  <span className="absolute inset-0 bg-gradient-to-t from-brand-night/85 via-brand-night/20 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3.5 md:p-4">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-[#202020] dark:bg-[#202020]">
+                    <img
+                      src={category.image || FALLBACK_CATEGORY_IMAGE}
+                      alt={category.name}
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => { e.currentTarget.src = FALLBACK_CATEGORY_IMAGE; e.currentTarget.onerror = null; }}
+                      className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                    />
+                    <span className="absolute inset-0 bg-gradient-to-t from-brand-night/80 via-brand-night/20 to-transparent" />
+                  </div>
+                  <div className="mt-5 px-0">
                     <div className="min-w-0">
-                      <h3 className="line-clamp-2 font-serif text-lg leading-tight text-white md:text-xl">{category.name}</h3>
-                      <p className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-white/65">
+                      <h3 className="line-clamp-1 font-serif text-lg leading-tight text-brand-black md:text-xl">{category.name}</h3>
+                      <p className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-brand-muted">
                         {category.productCount} {category.productCount === 1 ? 'piece' : 'pieces'}
                       </p>
                     </div>
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/40 text-white transition-colors group-hover:bg-white group-hover:text-brand-night">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/40 text-white transition-colors group-hover:bg-white group-hover:text-brand-night ml-auto mt-3">
                       <ArrowRight className="h-3.5 w-3.5" />
                     </span>
                   </div>
@@ -297,30 +309,30 @@ export const Home = () => {
 
       <FeaturedCollection />
 
-      <section className="relative overflow-hidden bg-brand-night">
+      <section className="relative overflow-hidden bg-brand-night animate-fade-up delay-300">
         <img
           src={PROMO_IMAGE}
           alt=""
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover opacity-50"
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-45"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-night via-brand-night/65 to-brand-night/0" />
-        <div className="container-premium relative z-10 flex min-h-[420px] items-center py-16 md:min-h-[520px]">
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-night via-brand-night/70 to-brand-night/0" />
+        <div className="container-premium relative z-10 flex min-h-[460px] items-center py-20 md:min-h-[560px]">
           <div className="max-w-xl">
-            <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/50">Limited release</p>
+            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-white/50">Limited release</p>
             <h2 className="font-serif text-4xl leading-[0.95] text-white md:text-6xl">
               The Core
               <br />
               <em className="font-normal italic">Edit.</em>
             </h2>
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-white/65">
+            <p className="mt-6 max-w-md text-sm leading-relaxed text-white/70">
               A focused edit of the pieces we reach for most. Clean lines, considered fits, available
               while stock lasts.
             </p>
             <Link
               to="/shop"
-              className="group mt-8 inline-flex items-center gap-3 bg-white px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-night transition-colors hover:bg-white/85"
+              className="group mt-10 inline-flex items-center gap-3 bg-white px-9 py-4.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-night transition-colors hover:bg-white/90"
             >
               Shop the Drop
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -330,19 +342,19 @@ export const Home = () => {
       </section>
 
       {lookbook.length >= 2 && (
-        <section className="bg-brand-white py-16 md:py-24">
+        <section className="bg-brand-offwhite py-16 md:py-24 animate-fade-up delay-400">
           <div className="container-premium">
-            <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-brand-accent">The lookbook</p>
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.32em] text-brand-accent">The lookbook</p>
                 <h2 className="text-3xl leading-tight tracking-tight text-brand-black md:text-4xl">One tee. Three ways.</h2>
-                <p className="mt-3 max-w-xl text-sm leading-relaxed text-brand-muted">
+                <p className="mt-4 max-w-xl text-sm leading-relaxed text-brand-muted">
                   Styling notes from the studio, built around the pieces in the current collection.
                 </p>
               </div>
               <Link
                 to="/shop"
-                className="group inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-black"
+                className="group inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-black"
               >
                 Shop the story
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -350,21 +362,21 @@ export const Home = () => {
             </div>
 
             {lookbook.length >= 3 ? (
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-8 lg:gap-10 md:grid-cols-2">
                 <LookTile
                   product={lookbook[0]}
                   priority
-                  className="h-[420px] md:row-span-2 md:h-full md:min-h-[620px]"
+                  className="h-[440px] md:row-span-2 md:h-full lg:min-h-[700px]"
                 />
-                <div className="grid gap-3">
-                  <LookTile product={lookbook[1]} className="h-[300px] md:h-[304px]" />
-                  <LookTile product={lookbook[2]} className="h-[300px] md:h-[304px]" />
+                <div className="grid gap-8">
+                  <LookTile product={lookbook[1]} className="h-[320px] md:h-[340px]" />
+                  <LookTile product={lookbook[2]} className="h-[320px] md:h-[340px]" />
                 </div>
               </div>
             ) : (
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-8 md:grid-cols-2">
                 {lookbook.map((product, index) => (
-                  <LookTile key={product.id} product={product} priority={index === 0} className="h-[420px] md:h-[520px]" />
+                  <LookTile key={product.id} product={product} priority={index === 0} className="h-[440px] md:h-[560px]" />
                 ))}
               </div>
             )}

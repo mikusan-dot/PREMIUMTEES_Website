@@ -102,7 +102,7 @@ export const ProductCard = ({ product, className, imagePriority = false }) => {
               key={b.key}
               className={cn(
                 'px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]',
-                b.tone === 'accent' && 'bg-brand-accent text-white',
+                b.tone === 'accent' && 'bg-brand-accent text-brand-onAccent',
                 b.tone === 'amber' && 'bg-amber-100 text-amber-800',
                 b.tone === 'ink' && 'bg-brand-black text-brand-white',
                 b.tone === 'red' && 'bg-[#dc2626] text-white',

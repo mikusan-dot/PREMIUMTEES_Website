@@ -5,7 +5,7 @@ import { ProductBrowser } from '@/components/product/ProductBrowser';
 
 export const Shop = () => {
   const { categories } = useCategories();
-  useSeo({ title: 'Shop All | Premium Tees', description: 'Browse every Premium Tees piece: T-shirts, drop shoulder, hoodies, full sleeves and sweatshirts.' });
+  useSeo({ title: 'Shop All', description: 'Browse every Unhinged Co. piece: T-shirts, drop shoulder, hoodies, full sleeves and sweatshirts.' });
   return (
     <section className="py-12 md:py-20">
       <div className="container-premium">

@@ -80,7 +80,7 @@ export const Wishlist = () => {
                     </button>
                   </div>
                   <h3 className="font-bold text-brand-black mb-1">{product.name}</h3>
-                  <p className="text-xs text-brand-muted mb-3">{product.category || 'Premium Tees'}</p>
+                  <p className="text-xs text-brand-muted mb-3">{product.category || 'Unhinged Co.'}</p>
                   <div className="flex items-center gap-2">
                     <span className="font-bold">{product.salePrice ? `৳${product.salePrice}` : `৳${product.price}`}</span>
                     {product.salePrice && <span className="text-xs text-brand-muted line-through">৳{product.price}</span>}

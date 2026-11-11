@@ -1,4 +1,4 @@
-// The five main PREMIUMTEES categories. Seeded once (only when the store has no categories yet,
+// The five main Unhinged Co. categories. Seeded once (only when the store has no categories yet,
 // or when an admin clicks "Add default categories"). After that everything is edited from the admin.
 const px = (id, width) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${width}`;
 
@@ -10,7 +10,7 @@ const make = (name, slug, description, photoId, sortOrder, seoDescription) => ({
   bannerImage: px(photoId, 1800),
   sortOrder,
   isActive: true,
-  seoTitle: `${name} | Premium Tees Bangladesh`,
+  seoTitle: `${name} | Unhinged Co. Bangladesh`,
   seoDescription,
 });
 

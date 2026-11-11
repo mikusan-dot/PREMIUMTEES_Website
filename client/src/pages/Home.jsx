@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, RefreshCw, ShieldCheck, Shirt, Truck, Wallet } from 'lucide-react';
 import { api } from '@/services/api';
+import { useSeo } from '@/hooks/useSeo';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useCategories, FALLBACK_CATEGORY_IMAGE } from '@/hooks/useCategories';
 import { FeaturedCollection } from '@/components/home/FeaturedCollection';
@@ -60,6 +61,7 @@ const LookTile = ({ product, className, priority = false }) => (
 
 export const Home = () => {
   const settings = useStoreSettings();
+  useSeo();
 
   const {
     data: products = [],
@@ -104,16 +106,16 @@ export const Home = () => {
           <div className="lg:col-span-6 xl:col-span-5">
             <p className="mb-5 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-accent">
               <span className="h-px w-8 bg-brand-accent" />
-              New collection · 2026
+              Unhinged Co. · Streetwear
             </p>
             <h1 className="font-serif text-[3.15rem] leading-[0.92] tracking-[-0.03em] text-brand-black sm:text-6xl md:text-7xl xl:text-[5.5rem]">
-              Wear your
+              Wear without
               <br />
-              <em className="font-normal italic">identity.</em>
+              <em className="font-normal italic">limits.</em>
             </h1>
             <p className="mt-7 max-w-md text-base leading-relaxed text-brand-charcoal/75">
-              Minimalist premium t-shirts designed for everyday confidence. Clean fits, quality fabric,
-              and timeless essentials — made for Bangladesh.
+              Premium streetwear built in Bangladesh. Heavyweight fabric, bold cuts and
+              clean design for people who don’t play by the rules.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -149,7 +151,7 @@ export const Home = () => {
               />
               <img
                 src={heroImage}
-                alt={featuredProduct ? featuredProduct.name : 'Premium Tees editorial'}
+                alt={featuredProduct ? featuredProduct.name : 'Unhinged Co. editorial'}
                 loading="eager"
                 decoding="async"
                 onError={(event) => {
@@ -186,7 +188,7 @@ export const Home = () => {
       {isError && (
         <div className="border-y border-red-200 bg-red-50">
           <div className="container-premium flex flex-col gap-3 py-4 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between">
-            <span>We couldn’t load the collection right now. Please try again.</span>
+            <span>The store is taking longer than usual to respond. Please tap Retry.</span>
             <button
               type="button"
               onClick={() => refetch()}

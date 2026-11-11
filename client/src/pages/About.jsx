@@ -1,69 +1,30 @@
-export const About = () => (
-  <section className="section">
-    <div className="container-premium">
-      <div className="max-w-3xl mx-auto text-center">
-        <h1 className="text-5xl font-bold text-brand-black mb-6">About Premium Tees</h1>
-        <p className="text-lg text-brand-charcoal mb-8 leading-relaxed">
-          Premium Tees is a minimalist clothing brand based in Bangladesh, crafting high-quality
-          T-shirts in oversized, regular fit, drop shoulder, graphic, plain, and polo styles.
-        </p>
-        <p className="text-lg text-brand-charcoal mb-10 leading-relaxed">
-          We believe in timeless design, honest pricing, and a simple shopping experience—no
-          account required, multiple payment options including bKash, Nagad, cards, and Cash on
-          Delivery, with fast delivery across Bangladesh.
-        </p>
-      </div>
-    </div>
-  </section>
-);
+import { Link } from 'react-router-dom';
+import { useBrand } from '@/hooks/useStoreSettings';
+import { useSeo } from '@/hooks/useSeo';
 
-export const Contact = () => (
-  <section className="section">
-    <div className="container-premium">
-      <div className="grid lg:grid-cols-2 gap-16">
-        <div>
-          <h1 className="text-5xl font-bold text-brand-black mb-6">Contact Us</h1>
-          <p className="text-brand-charcoal mb-8 leading-relaxed">
-            Have a question about sizing, delivery, or an existing order? Reach out to us and
-            we'll respond as soon as possible.
+export const About = () => {
+  const brand = useBrand();
+  useSeo({ title: 'About', description: `${brand.name} is a premium streetwear brand from Bangladesh. ${brand.tagline}` });
+  return (
+    <section className="section">
+      <div className="container-premium">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-brand-muted">{brand.tagline}</p>
+          <h1 className="mb-6 text-5xl font-bold text-brand-black">About {brand.name}</h1>
+          <p className="mb-8 text-lg leading-relaxed text-brand-charcoal">
+            {brand.name} is a premium streetwear brand based in Bangladesh. We make heavyweight tees,
+            drop shoulders, hoodies, full sleeves and sweatshirts with bold, minimal design and a fit that
+            feels as good as it looks.
           </p>
-          <div className="space-y-6">
-            <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-brand-offwhite flex items-center justify-center text-brand-black font-bold">✉</div>
-              <div>
-                <div className="font-bold text-brand-black">Email</div>
-                <div className="text-brand-muted">support@premiumtees.com</div>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-brand-offwhite flex items-center justify-center text-brand-black font-bold">☎</div>
-              <div>
-                <div className="font-bold text-brand-black">Phone</div>
-                <div className="text-brand-muted">+880 1700 000000</div>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-brand-offwhite flex items-center justify-center text-brand-black font-bold">📍</div>
-              <div>
-                <div className="font-bold text-brand-black">Address</div>
-                <div className="text-brand-muted">Dhaka, Bangladesh</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="border border-brand-border rounded-2xl p-8 bg-brand-white">
-          <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
-            <div className="grid grid-cols-2 gap-5">
-              <Input type="text" placeholder="Full name" />
-              <Input type="email" placeholder="Email address" />
-            </div>
-            <Input type="text" placeholder="Subject" />
-            <textarea rows="5" placeholder="Your message" className="block w-full rounded-md border border-brand-border bg-brand-white px-4 py-2.5 text-brand-charcoal shadow-sm placeholder:text-brand-muted focus:border-brand-accent focus:ring-1 focus:ring-brand-accent focus:outline-none" />
-            <Button type="submit" className="w-full">Send Message</Button>
-          </form>
+          <p className="mb-10 text-lg leading-relaxed text-brand-charcoal">
+            Honest pricing, a simple shopping experience with no account required, and payment options
+            including bKash, Nagad, cards and Cash on Delivery — delivered across Bangladesh.
+          </p>
+          <Link to="/shop" className="inline-block bg-brand-black px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-white">
+            Shop the collection
+          </Link>
         </div>
       </div>
-    </div>
-  </section>
-);
-
+    </section>
+  );
+};

@@ -39,7 +39,7 @@ export const Reviews = () => {
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-brand-accent">In their words</p>
             <h2 className="text-3xl leading-tight tracking-tight text-brand-black md:text-4xl">Worn and reviewed.</h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-brand-muted">
-              Real feedback from verified customers who wear Premium Tees.
+              Real feedback from verified customers who wear Unhinged Co.
             </p>
           </div>
           <div className="flex items-center gap-3 text-sm text-brand-charcoal">

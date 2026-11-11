@@ -5,7 +5,7 @@ export const Badge = forwardRef(({ className, variant = 'default', ...props }, r
   const variants = {
     default: 'bg-brand-black text-brand-white',
     secondary: 'bg-brand-offwhite text-brand-charcoal',
-    accent: 'bg-brand-accent text-white',
+    accent: 'bg-brand-accent text-brand-onAccent',
     outline: 'border border-brand-charcoal bg-transparent text-brand-charcoal',
     success: 'bg-green-100 text-green-800',
     warning: 'bg-amber-100 text-amber-800',

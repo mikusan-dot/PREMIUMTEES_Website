@@ -18,7 +18,7 @@ export const CategoryPage = () => {
   });
 
   useSeo({
-    title: category ? category.seoTitle || `${category.name} | Premium Tees` : undefined,
+    title: category ? (category.seoTitle && !/premium\s*-?tees/i.test(category.seoTitle) ? category.seoTitle : category.name) : undefined,
     description: category ? category.seoDescription || category.description : undefined,
     image: category?.bannerImage || category?.image,
   });

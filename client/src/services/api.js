@@ -13,6 +13,7 @@ export const apiUrl = (path) => `${API_BASE_URL}${path.startsWith('/') ? path : 
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 45000, // tolerate a cold-starting backend
   headers: { 'Content-Type': 'application/json' },
 });
 

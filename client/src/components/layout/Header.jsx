@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { BrandLogo } from '@/components/layout/BrandLogo';
+import { useBrand } from '@/hooks/useStoreSettings';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, ChevronDown, Heart, Menu, Moon, Search, ShoppingCart, Sun, X } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
@@ -46,6 +48,7 @@ const Underline = ({ active }) => (
 );
 
 export const Header = () => {
+  const brand = useBrand();
   const { getItemCount } = useCartStore();
   const { ids: wishlistIds } = useWishlistStore();
   const { isDark, toggle } = useTheme();
@@ -158,7 +161,7 @@ export const Header = () => {
       to={link.href}
       className={cn(
         NAV_LINK,
-        link.accent ? 'text-brand-accent hover:text-brand-accentHover' : isActive(link.href) ? 'text-brand-black' : 'text-brand-charcoal/65 hover:text-brand-black',
+        link.accent ? 'text-red-600 hover:text-red-700' : isActive(link.href) ? 'text-brand-black' : 'text-brand-charcoal/65 hover:text-brand-black',
       )}
     >
       {link.name}
@@ -181,10 +184,10 @@ export const Header = () => {
         <div className="container-premium flex h-16 items-center justify-between gap-3 sm:h-20">
           <Link
             to="/"
-            className="shrink-0 whitespace-nowrap font-serif text-[1.3rem] max-[359px]:text-[1.1rem] font-bold leading-none tracking-[-0.045em] text-brand-black sm:text-3xl lg:text-[2rem] xl:text-4xl"
-            aria-label="Premium Tees home"
+            className="shrink-0 whitespace-nowrap text-brand-black"
+            aria-label={`${brand.name} home`}
           >
-            PREMIUM<span className="text-brand-accent">TEES</span>
+            <BrandLogo className="text-[1.1rem] max-[359px]:text-[0.95rem] sm:text-2xl lg:text-[1.65rem] xl:text-3xl" />
           </Link>
 
           <nav className="hidden items-center gap-5 lg:flex xl:gap-9" aria-label="Primary navigation">
@@ -410,7 +413,7 @@ export const Header = () => {
 
                   {SIMPLE_LINKS.after.map((link) => (
                     <li key={link.name}>
-                      <Link to={link.href} className={cn('flex min-h-[48px] items-center justify-between', link.accent ? 'text-brand-accent' : isActive(link.href) ? 'text-brand-black' : 'text-brand-charcoal/70')}>
+                      <Link to={link.href} className={cn('flex min-h-[48px] items-center justify-between', link.accent ? 'text-red-600' : isActive(link.href) ? 'text-brand-black' : 'text-brand-charcoal/70')}>
                         {link.name}
                       </Link>
                     </li>

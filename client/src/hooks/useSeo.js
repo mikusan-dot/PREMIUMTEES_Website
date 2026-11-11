@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
+import { useBrand } from '@/hooks/useStoreSettings';
 
-const BASE_TITLE = 'Premium Tees | Minimalist T-Shirt Brand';
-
-const setMeta = (selector, attr, key, value) => {
-  let el = document.head.querySelector(selector);
+const setMeta = (attr, key, value) => {
   if (!value) return;
+  let el = document.head.querySelector(`meta[${attr}="${key}"]`);
   if (!el) {
     el = document.createElement('meta');
     el.setAttribute(attr, key);
@@ -13,21 +12,29 @@ const setMeta = (selector, attr, key, value) => {
   el.setAttribute('content', value);
 };
 
-/** Sets the document title, description and Open Graph tags for the current page; restores the defaults on leave. */
+/**
+ * Sets the document title, description and Open Graph tags for the current page.
+ * Pass the page's own title (e.g. "Shop All"); the brand name is appended automatically.
+ * With no title, the brand default "Brand | Tagline" is used.
+ */
 export const useSeo = ({ title, description, image } = {}) => {
+  const brand = useBrand();
   useEffect(() => {
-    if (!title) return undefined;
-    const previousTitle = document.title;
-    const descEl = document.head.querySelector('meta[name="description"]');
-    const previousDescription = descEl?.getAttribute('content');
-    document.title = title;
-    setMeta('meta[name="description"]', 'name', 'description', description);
-    setMeta('meta[property="og:title"]', 'property', 'og:title', title);
-    setMeta('meta[property="og:description"]', 'property', 'og:description', description);
-    setMeta('meta[property="og:image"]', 'property', 'og:image', image);
+    const full = title ? `${title} | ${brand.name}` : `${brand.name} | ${brand.tagline}`;
+    const desc = description || brand.description;
+    document.title = full;
+    setMeta('name', 'description', desc);
+    setMeta('property', 'og:title', full);
+    setMeta('property', 'og:description', desc);
+    setMeta('name', 'twitter:title', full);
+    setMeta('name', 'twitter:description', desc);
+    if (image) { setMeta('property', 'og:image', image); setMeta('name', 'twitter:image', image); }
     return () => {
-      document.title = previousTitle || BASE_TITLE;
-      if (previousDescription) descEl?.setAttribute('content', previousDescription);
+      // Restore the brand default so pages that don't call useSeo never show a stale title.
+      document.title = `${brand.name} | ${brand.tagline}`;
+      setMeta('name', 'description', brand.description);
+      setMeta('property', 'og:title', `${brand.name} | ${brand.tagline}`);
+      setMeta('property', 'og:description', brand.description);
     };
-  }, [title, description, image]);
+  }, [title, description, image, brand.name, brand.tagline, brand.description]);
 };

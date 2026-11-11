@@ -5,9 +5,9 @@ const FALLBACK_URL = 'https://www.instagram.com/';
 const handleFromUrl = (url) => {
   try {
     const path = new URL(url).pathname.replace(/\//g, '');
-    return path ? `@${path}` : '@premiumtees';
+    return path ? `@${path}` : '@unhingedco';
   } catch {
-    return '@premiumtees';
+    return '@unhingedco';
   }
 };
 

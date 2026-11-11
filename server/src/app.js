@@ -70,7 +70,7 @@ app.get('/api/health', (_req, res) => {
 
 // Root route
 app.get('/', (_req, res) => {
-  res.send('Premium Tees E-commerce Platform is running. Visit /api/health for status.');
+  res.send('Unhinged Co. e-commerce API is running. Visit /api/health for status.');
 });
 
 // Route imports

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+Sitemap: https://unhinged-co.onrender.com/sitemap.xml

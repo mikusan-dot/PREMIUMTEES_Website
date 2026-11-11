@@ -15,6 +15,7 @@ export default {
           charcoal: 'rgb(var(--body) / <alpha-value>)',
           accent: 'rgb(var(--accent) / <alpha-value>)',
           accentHover: 'rgb(var(--accent-hover) / <alpha-value>)',
+          onAccent: 'rgb(var(--on-accent) / <alpha-value>)',
           muted: 'rgb(var(--muted) / <alpha-value>)',
           border: 'rgb(var(--line) / <alpha-value>)',
           night: '#0a0a0a',

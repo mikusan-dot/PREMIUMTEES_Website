@@ -1,4 +1,4 @@
-# Premium Tees — T-Shirt E-Commerce & Business Management Platform
+# Unhinged Co. — Streetwear E-Commerce & Business Management Platform
 
 A premium, production-ready T-shirt e-commerce platform for Bangladesh with a customer
 storefront, guest checkout, Bangladesh payment support (COD, bKash, Nagad, cards), order

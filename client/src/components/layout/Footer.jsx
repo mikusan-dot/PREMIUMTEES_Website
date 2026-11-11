@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Music2 } from 'lucide-react';
-import { useStoreSettings } from '@/hooks/useStoreSettings';
+import { BrandLogo } from '@/components/layout/BrandLogo';
+import { useBrand, useStoreSettings } from '@/hooks/useStoreSettings';
 
 const SHOP_LINKS = [
   { name: 'Shop All', href: '/shop' },
@@ -15,15 +16,16 @@ const SHOP_LINKS = [
 const HELP_LINKS = [
   { name: 'Contact Us', href: '/contact' },
   { name: 'Track Order', href: '/track' },
-  { name: 'Shipping & Returns', href: '/about' },
-  { name: 'Privacy Policy', href: '/about' },
-  { name: 'Terms & Conditions', href: '/about' },
+  { name: 'Shipping & Returns', href: '/terms#shipping' },
+  { name: 'Privacy Policy', href: '/privacy' },
+  { name: 'Terms & Conditions', href: '/terms' },
 ];
 
 const PAYMENTS = ['Cash on Delivery', 'bKash', 'Nagad', 'Visa', 'Mastercard'];
 
 export const Footer = () => {
   const settings = useStoreSettings();
+  const brand = useBrand();
   const instagram = settings.instagramUrl || 'https://www.instagram.com/';
 
   return (
@@ -33,12 +35,13 @@ export const Footer = () => {
           <div className="col-span-2 lg:col-span-4">
             <Link
               to="/"
-              className="inline-block font-serif text-2xl font-bold leading-none tracking-[-0.045em] text-white sm:text-3xl"
+              className="inline-block text-white"
+              aria-label={`${brand.name} home`}
             >
-              PREMIUM<span className="text-brand-accent">TEES</span>
+              <BrandLogo className="text-2xl sm:text-3xl" imgClassName="h-9 w-auto max-w-[12rem] brightness-0 invert" />
             </Link>
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/50">
-              Considered essentials in heavyweight cotton. Designed in Dhaka, made to be worn on repeat.
+              {brand.tagline} Premium streetwear designed in Dhaka, made in heavyweight cotton.
             </p>
             <div className="mt-6 flex items-center gap-2">
               <a
@@ -51,7 +54,7 @@ export const Footer = () => {
                 <Instagram className="h-4 w-4" />
               </a>
               <a
-                href="https://www.facebook.com/"
+                href={settings.facebookUrl || 'https://www.facebook.com/'}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Facebook"
@@ -60,7 +63,7 @@ export const Footer = () => {
                 <Facebook className="h-4 w-4" />
               </a>
               <a
-                href="https://www.tiktok.com/"
+                href={settings.tiktokUrl || 'https://www.tiktok.com/'}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="TikTok"
@@ -116,11 +119,11 @@ export const Footer = () => {
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-[11px] text-white/35 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Premium Tees. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {brand.name} All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <span>Designed in Dhaka, Bangladesh</span>
-            <Link to="/about" className="transition-colors hover:text-white">Privacy</Link>
-            <Link to="/about" className="transition-colors hover:text-white">Terms</Link>
+            <Link to="/privacy" className="transition-colors hover:text-white">Privacy</Link>
+            <Link to="/terms" className="transition-colors hover:text-white">Terms</Link>
           </div>
         </div>
       </div>

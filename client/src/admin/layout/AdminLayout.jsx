@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { BrandLogo } from '@/components/layout/BrandLogo';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingCart, Ticket, Tags, CreditCard, Users, BarChart3, Settings, LogOut, Layers } from 'lucide-react';
 
@@ -23,8 +24,9 @@ export const AdminLayout = () => {
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <nav className="fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-200 bg-brand-white">
         <div className="h-16 border-b border-gray-200 flex items-center justify-center px-4">
-          <Link to="/admin/dashboard" className="font-serif text-xl font-bold text-brand-black tracking-tighter">
-            ADMIN<span className="text-amber-600">TEES</span>
+          <Link to="/admin/dashboard" className="flex flex-col items-center leading-none text-brand-black" aria-label="Admin dashboard">
+            <BrandLogo className="text-lg" imgClassName="h-7 w-auto max-w-[10rem]" />
+            <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.3em] text-gray-500">Admin</span>
           </Link>
         </div>
         <div className="mt-6 space-y-1 px-3">

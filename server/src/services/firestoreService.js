@@ -801,8 +801,22 @@ const readSettings = async () => {
   return snap.exists ? snap.data() : {};
 };
 
+// Settings saved before the rebrand may still hold the old name/tagline. Treat those as
+// "unset" so the new brand shows without anyone having to re-save Admin -> Settings.
+const LEGACY_BRAND = /^premium\s*-?\s*tees$/i;
+const brandOrDefault = (value, fallback) => (value && !LEGACY_BRAND.test(String(value).trim()) ? value : fallback);
+
 const withDefaults = (settings) => ({
-  brandName: settings.brandName || 'Premium Tees',
+  brandName: brandOrDefault(settings.brandName, 'Unhinged Co.'),
+  brandTagline: settings.brandTagline || 'Wear Without Limits.',
+  brandDescription: settings.brandDescription || 'Unhinged Co. is a premium streetwear brand from Bangladesh. Wear Without Limits.',
+  logoUrl: settings.logoUrl || '',
+  faviconUrl: settings.faviconUrl || '',
+  supportEmail: settings.supportEmail || 'support@unhingedco.com',
+  supportPhone: settings.supportPhone || '+880 1700 000000',
+  address: settings.address || 'Dhaka, Bangladesh',
+  facebookUrl: settings.facebookUrl || '',
+  tiktokUrl: settings.tiktokUrl || '',
   brandCurrency: settings.brandCurrency || 'BDT',
   deliveryChargeInsideDhaka: settings.deliveryChargeInsideDhaka ?? 80,
   deliveryChargeOutsideDhaka: settings.deliveryChargeOutsideDhaka ?? 150,

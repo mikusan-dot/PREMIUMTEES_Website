@@ -95,6 +95,15 @@ export const categorySchema = z.object({
 
 export const settingsSchema = z.object({
   brandName: z.string().min(1),
+  brandTagline: z.string().max(120).default(''),
+  brandDescription: z.string().max(300).default(''),
+  logoUrl: z.union([z.string().url(), z.literal('')]).default(''),
+  faviconUrl: z.union([z.string().url(), z.literal('')]).default(''),
+  supportEmail: z.union([z.string().email(), z.literal('')]).default(''),
+  supportPhone: z.string().max(40).default(''),
+  address: z.string().max(200).default(''),
+  facebookUrl: z.union([z.string().url(), z.literal('')]).default(''),
+  tiktokUrl: z.union([z.string().url(), z.literal('')]).default(''),
   brandCurrency: z.string().default('BDT'),
   deliveryChargeInsideDhaka: z.number().nonnegative().default(80),
   deliveryChargeOutsideDhaka: z.number().nonnegative().default(150),

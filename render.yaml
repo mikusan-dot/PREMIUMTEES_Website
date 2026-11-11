@@ -1,9 +1,11 @@
-# Render deployment configuration - Premium Tees
+# Render deployment configuration - Unhinged Co.
 # Client static site with SPA fallback for React Router client-side routes.
 
 services:
   - type: web
-    name: premium-tees-client
+    # Service name decides the default URL: https://unhinged-co.onrender.com (if the name is free;
+    # Render appends a suffix otherwise - check the dashboard for the real hostname).
+    name: unhinged-co
     runtime: static
     rootDir: client
     buildCommand: npm install && npm run build
@@ -14,7 +16,14 @@ services:
       # Backend origin (no trailing slash, no /api suffix)
       - key: VITE_API_URL
         value: https://premiumtees-website.onrender.com
-    routes:
+      # Public URL of THIS site: canonical tags, sitemap, robots.txt, og:image.
+      # Change to https://unhingedco.com once the custom domain is live.
+      - key: VITE_SITE_URL
+        value: https://unhinged-co.onrender.com
+      # Old hostnames that should forward visitors to VITE_SITE_URL (comma-separated, hostnames only).
+      # Fill in the OLD frontend hostname (e.g. premium-tees-client.onrender.com) - see DEPLOYMENT.md.
+      - key: VITE_LEGACY_HOSTS
+        value: premium-tees-client.onrender.com    routes:
       # Rewrite client-side routes to index.html so React Router handles them.
       - type: rewrite
         source: /*

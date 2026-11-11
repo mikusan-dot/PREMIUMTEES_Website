@@ -5,7 +5,7 @@ export const Button = forwardRef(({ className, variant = 'default', size = 'defa
   const Comp = asChild ? props.as || 'span' : 'button';
   const variants = {
     default: 'bg-brand-black text-brand-white hover:bg-brand-charcoal',
-    accent: 'bg-brand-accent text-white hover:bg-brand-accentHover',
+    accent: 'bg-brand-accent text-brand-onAccent hover:bg-brand-accentHover',
     outline: 'border border-brand-charcoal bg-transparent text-brand-black hover:bg-brand-black hover:text-brand-white',
     ghost: 'hover:bg-brand-offwhite text-brand-charcoal',
     destructive: 'bg-[#dc2626] text-white hover:bg-[#b91c1c]',

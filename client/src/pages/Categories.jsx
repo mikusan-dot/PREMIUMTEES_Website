@@ -6,7 +6,7 @@ import { GridMessage, ProductGridSkeleton } from '@/components/product/ProductLi
 
 export const Categories = () => {
   const { categories, isLoading, isError, refetch } = useCategories();
-  useSeo({ title: 'Shop by Category | Premium Tees', description: 'Browse T-shirts, drop shoulder, hoodies, full sleeves and sweatshirts from Premium Tees.' });
+  useSeo({ title: 'Shop by Category', description: 'Browse T-shirts, drop shoulder, hoodies, full sleeves and sweatshirts from Unhinged Co.' });
 
   return (
     <section className="py-12 md:py-20">

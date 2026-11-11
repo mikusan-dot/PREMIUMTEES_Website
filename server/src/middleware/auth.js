@@ -19,7 +19,7 @@ export const authenticateAdmin = async (req, res, next) => {
       // Dev fallback: accept any token, derive role from header X-Admin-Role or default viewer
       decoded = {
         uid: 'dev-admin-uid',
-        email: 'dev@premiumtees.local',
+        email: 'dev@unhingedco.local',
         role: req.headers['x-admin-role'] || 'super_admin',
       };
     } else {

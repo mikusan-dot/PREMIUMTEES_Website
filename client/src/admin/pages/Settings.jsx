@@ -3,6 +3,7 @@ import { Trash2, Upload } from 'lucide-react';
 import { api } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ImageField } from '@/admin/components/ImageField';
 import { PageHeader, Panel, Notice, Field, errMsg } from '@/admin/components/common';
 
 export const AdminSettings = () => {
@@ -56,6 +57,15 @@ export const AdminSettings = () => {
     try {
       await api.put('/admin/settings', {
         brandName: form.brandName.trim(),
+        brandTagline: (form.brandTagline || '').trim(),
+        brandDescription: (form.brandDescription || '').trim(),
+        logoUrl: form.logoUrl || '',
+        faviconUrl: form.faviconUrl || '',
+        supportEmail: (form.supportEmail || '').trim(),
+        supportPhone: (form.supportPhone || '').trim(),
+        address: (form.address || '').trim(),
+        facebookUrl: (form.facebookUrl || '').trim(),
+        tiktokUrl: (form.tiktokUrl || '').trim(),
         brandCurrency: form.brandCurrency.trim() || 'BDT',
         deliveryChargeInsideDhaka: Number(form.deliveryChargeInsideDhaka) || 0,
         deliveryChargeOutsideDhaka: Number(form.deliveryChargeOutsideDhaka) || 0,
@@ -78,7 +88,29 @@ export const AdminSettings = () => {
       {!form ? (!message && <p className="text-sm text-gray-500">Loading...</p>) : (
         <Panel className="max-w-2xl">
           <form onSubmit={submit} className="space-y-4">
-            <Field label="Brand name"><Input value={form.brandName} onChange={(e) => set('brandName', e.target.value)} required /></Field>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-base font-semibold text-brand-black">Brand</h3>
+                <p className="text-xs text-gray-500">Shown in the header, footer, page titles and social previews. Leave the logo empty to use the text wordmark.</p>
+              </div>
+              <Field label="Brand name"><Input value={form.brandName} onChange={(e) => set('brandName', e.target.value)} required /></Field>
+              <Field label="Tagline"><Input value={form.brandTagline || ''} onChange={(e) => set('brandTagline', e.target.value)} placeholder="Wear Without Limits." /></Field>
+              <Field label="Short description (SEO)"><Input value={form.brandDescription || ''} onChange={(e) => set('brandDescription', e.target.value)} /></Field>
+              <div className="grid grid-cols-2 gap-4">
+                <ImageField label="Logo (optional)" hint="Transparent PNG/SVG works best" aspect="aspect-[3/1]" value={form.logoUrl} onChange={(url) => set('logoUrl', url)} onError={(text) => setMessage({ type: 'error', text })} />
+                <ImageField label="Favicon (optional)" hint="Square, at least 64×64" aspect="aspect-square" value={form.faviconUrl} onChange={(url) => set('faviconUrl', url)} onError={(text) => setMessage({ type: 'error', text })} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Support email"><Input type="email" value={form.supportEmail || ''} onChange={(e) => set('supportEmail', e.target.value)} /></Field>
+                <Field label="Phone"><Input value={form.supportPhone || ''} onChange={(e) => set('supportPhone', e.target.value)} /></Field>
+              </div>
+              <Field label="Address"><Input value={form.address || ''} onChange={(e) => set('address', e.target.value)} /></Field>
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Facebook URL"><Input type="url" value={form.facebookUrl || ''} onChange={(e) => set('facebookUrl', e.target.value)} placeholder="https://facebook.com/..." /></Field>
+                <Field label="TikTok URL"><Input type="url" value={form.tiktokUrl || ''} onChange={(e) => set('tiktokUrl', e.target.value)} placeholder="https://tiktok.com/@..." /></Field>
+              </div>
+            </div>
+            <div className="border-t border-gray-100 pt-5" />
             <Field label="Currency code"><Input value={form.brandCurrency} onChange={(e) => set('brandCurrency', e.target.value)} /></Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Delivery inside Dhaka (BDT)"><Input type="number" min="0" value={form.deliveryChargeInsideDhaka} onChange={(e) => set('deliveryChargeInsideDhaka', e.target.value)} /></Field>

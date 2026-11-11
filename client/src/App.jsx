@@ -16,6 +16,8 @@ import { Sale } from '@/pages/Sale';
 import { Collections, CollectionDetail } from '@/pages/Collections';
 import { About } from '@/pages/About';
 import { Contact } from '@/pages/Contact';
+import { Privacy, Terms } from '@/pages/Legal';
+import { BrandHead } from '@/components/BrandHead';
 import { NotFound } from '@/pages/NotFound';
 import { AdminLayout } from '@/admin/layout/AdminLayout';
 import { AdminLogin } from '@/admin/pages/Login';
@@ -37,6 +39,7 @@ const AdminReports = lazy(() => import('@/admin/pages/Reports').then((m) => ({ d
 
 const App = () => (
   <BrowserRouter>
+    <BrandHead />
     <Routes>
       {/* Public storefront */}
       <Route path="/" element={<Layout />}>
@@ -56,6 +59,8 @@ const App = () => (
         <Route path="track" element={<OrderTracking />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="privacy" element={<Privacy />} />
+        <Route path="terms" element={<Terms />} />
       </Route>
 
       {/* Admin */}

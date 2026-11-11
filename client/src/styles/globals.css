@@ -11,8 +11,9 @@
     --body: 31 31 31;
     --muted: 107 114 128;
     --line: 229 229 229;
-    --accent: 180 83 9;
-    --accent-hover: 146 64 14;
+    --accent: 23 23 23;
+    --on-accent: 255 255 255;
+    --accent-hover: 64 64 64;
     --gray-50: 249 250 251;
     --gray-100: 243 244 246;
     --gray-200: 229 231 235;
@@ -58,8 +59,9 @@
     --body: 228 228 226;
     --muted: 163 163 163;
     --line: 56 56 56;
-    --accent: 217 119 6;
-    --accent-hover: 245 158 11;
+    --accent: 244 244 245;
+    --on-accent: 18 18 18;
+    --accent-hover: 212 212 216;
     --gray-50: 34 34 34;
     --gray-100: 38 38 38;
     --gray-200: 56 56 56;
@@ -104,7 +106,7 @@
   }
 
   body {
-    @apply bg-brand-offwhite text-brand-charcoal antialiased selection:bg-brand-accent selection:text-white transition-colors duration-200;
+    @apply bg-brand-offwhite text-brand-charcoal antialiased selection:bg-brand-accent selection:text-brand-onAccent transition-colors duration-200;
   }
 
   h1, h2, h3, h4, h5, h6, .font-serif {
@@ -185,7 +187,7 @@
   }
 
   .btn-accent {
-    @apply btn bg-brand-accent text-white hover:bg-brand-accentHover focus:ring-brand-accent;
+    @apply btn bg-brand-accent text-brand-onAccent hover:bg-brand-accentHover focus:ring-brand-accent;
   }
 
   .input {

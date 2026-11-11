@@ -3,7 +3,15 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      // Social crawlers need an absolute og:image URL; inject the configured site URL.
+      name: 'inject-site-url',
+      transformIndexHtml: (html) =>
+        html.replace(/__SITE_URL__/g, (process.env.VITE_SITE_URL || 'https://unhinged-co.onrender.com').replace(/\/+$/, '')),
+    },
+  ],
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),

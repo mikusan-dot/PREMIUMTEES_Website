@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { apiUrl } from '@/services/api';
 import { useStoreSettings, isInsideDhaka } from '@/hooks/useStoreSettings';
 
+const PLACEHOLDER = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&h=600&fit=crop&q=80';
+
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Full name is required'),
   phone: z.string().min(10, 'Valid phone number is required'),
@@ -230,7 +232,7 @@ export const Checkout = () => {
                   {items.map((i) => (
                     <div key={i.variantId} className="flex justify-between items-center text-sm">
                       <div className="flex items-center gap-3">
-                        <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=40&h=40&fit=crop&q=80" alt="" className="w-8 h-8 rounded-md object-cover" />
+                        <img src={i.images?.[0] ?? i.image ?? PLACEHOLDER} alt={i.name} className="w-8 h-8 rounded-md object-cover object-center" />
                         <div>
                           <div className="text-brand-black font-medium text-sm">{i.name}</div>
                           <div className="text-xs text-brand-muted">{i.size} · {i.color}</div>

@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 
+const PLACEHOLDER = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&h=600&fit=crop&q=80';
+
 export const Cart = () => {
   const settings = useStoreSettings(); // keep hooks above any early return
   const { items, removeItem, updateQuantity, getSubtotal, getItemCount, clearCart } = useCartStore();
@@ -37,7 +39,7 @@ export const Cart = () => {
               {items.map((item) => (
                 <Card key={item.variantId} className="flex flex-col sm:flex-row gap-6 p-6">
                   <div className="w-full sm:w-32 h-32 shrink-0 rounded-xl overflow-hidden bg-brand-offwhite">
-                    <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&h=400&fit=crop&q=80" alt={item.name} className="w-full h-full object-cover" />
+                    <img src={item.images?.[0] ?? item.image ?? PLACEHOLDER} alt={item.name} className="w-full h-full object-cover object-center" />
                   </div>
                   <div className="flex-grow space-y-3">
                     <div>

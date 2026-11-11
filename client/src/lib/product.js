@@ -58,9 +58,12 @@ export const colorHex = (color) => COLOR_HEX[String(color || '').trim().toLowerC
 
 export const toCartItem = (product) => {
   const variant = getDefaultVariant(product);
+  const image = product?.images?.find(Boolean) ?? product?.image ?? null;
   if (variant) {
     return {
       ...product,
+      image,
+      images: product?.images,
       price: getCurrentPrice(product),
       variantId: variant.sku,
       color: variant.color,
@@ -69,6 +72,8 @@ export const toCartItem = (product) => {
   }
   return {
     ...product,
+    image,
+    images: product?.images,
     price: getCurrentPrice(product),
     variantId: getVariantId(product),
     color: getProductColors(product)[0],

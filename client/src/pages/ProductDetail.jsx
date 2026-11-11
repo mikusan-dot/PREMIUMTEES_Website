@@ -186,7 +186,7 @@ export const ProductDetail = () => {
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
           <div className="space-y-3">
-            <div className="relative aspect-square overflow-hidden rounded-lg border border-brand-border bg-brand-white sm:aspect-[4/5]">
+            <div className="relative aspect-square overflow-hidden rounded-xl bg-brand-white dark:bg-[#202020] border-0 dark:border-0 sm:aspect-[4/5]">
               <button
                 type="button"
                 onClick={() => setZoomOpen(true)}

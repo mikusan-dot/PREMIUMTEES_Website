@@ -34,16 +34,16 @@ const currentPrice = (product) => {
 const productImage = (product) => product?.images?.find(Boolean) || '';
 
 const LookTile = ({ product, className, priority = false }) => (
-  <Link
-    to={`/product/${product.id}`}
-    className={cn('group relative block overflow-hidden bg-brand-offwhite', className)}
+    <Link
+      to={`/product/${product.id}`}
+      className={cn('group relative block overflow-hidden bg-brand-offwhite dark:bg-[#202020]', className)}
   >
     <img
       src={productImage(product)}
       alt={product.name}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
-      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                className="h-full w-full object-contain object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
     />
     <div className="absolute inset-0 bg-gradient-to-t from-brand-night/80 via-brand-night/15 to-transparent" />
     <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 md:p-6">

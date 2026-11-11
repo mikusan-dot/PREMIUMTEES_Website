@@ -71,11 +71,11 @@ export const ProductCard = ({ product, className, imagePriority = false }) => {
   return (
     <article
       className={cn(
-        'group flex h-full flex-col overflow-hidden rounded-lg border border-brand-border bg-brand-white transition-all duration-300 hover:border-brand-charcoal/25 hover:shadow-[0_18px_40px_-28px_rgba(10,10,10,0.45)]',
+        'group flex h-full flex-col overflow-hidden rounded-lg border border-brand-border bg-brand-white transition-all duration-300 hover:border-brand-charcoal/25 hover:shadow-[0_18px_40px_-28px_rgba(10,10,10,0.45)] dark:border-0 dark:rounded-xl dark:bg-[#1B1B1B] dark:hover:bg-[#242424] dark:hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.35)]',
         className,
       )}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-brand-offwhite">
+      <div className="relative aspect-[4/5] overflow-hidden bg-brand-offwhite dark:bg-[#202020]">
         <Link to={product.id ? `/product/${product.id}` : '/shop'} aria-label={`View ${product.name}`} className="block h-full w-full">
           <img
             src={product.images?.[0] || PLACEHOLDER}
@@ -86,7 +86,7 @@ export const ProductCard = ({ product, className, imagePriority = false }) => {
               e.currentTarget.src = PLACEHOLDER;
               e.currentTarget.onerror = null;
             }}
-            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            className="h-full w-full object-contain object-center transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           />
           <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-night/10 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         </Link>

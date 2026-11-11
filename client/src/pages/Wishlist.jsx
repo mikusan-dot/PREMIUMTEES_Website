@@ -64,9 +64,9 @@ export const Wishlist = () => {
             {items.map((product) => {
               const inStock = isProductInStock(product);
               return (
-                <Card key={product.id} className="group cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
-                  <div className="relative h-64 rounded-xl overflow-hidden mb-4 group-hover:border-brand-accent transition-colors border border-brand-border">
-                    <img src={product.images?.[0] || PLACEHOLDER} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <Card key={product.id} className="group cursor-pointer border-0 dark:border-0 bg-brand-white dark:bg-[#1B1B1B] shadow-none dark:hover:shadow-md" onClick={() => navigate(`/product/${product.id}`)}>
+                  <div className="relative h-64 rounded-xl overflow-hidden mb-4 bg-brand-offwhite dark:bg-[#202020] border-0 dark:border-0 transition-all duration-300">
+                    <img src={product.images?.[0] || PLACEHOLDER} alt={product.name} className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500" />
                     {product.badge && <Badge variant="sale" className="absolute top-3 left-3">{product.badge}</Badge>}
                     {!inStock && <Badge variant="out-of-stock" className="absolute top-3 left-3">Out of Stock</Badge>}
                     <button
@@ -74,7 +74,7 @@ export const Wishlist = () => {
                       aria-label={`Remove ${product.name} from wishlist`}
                       title="Remove from wishlist"
                       onClick={(e) => { e.stopPropagation(); remove(product.id); }}
-                      className="absolute top-3 right-3 p-2 bg-brand-white/90 rounded-full hover:bg-brand-white transition-colors"
+                      className="absolute top-3 right-3 p-2 bg-brand-white/90 dark:bg-[#202020]/90 rounded-full hover:bg-brand-white dark:hover:bg-[#202020] transition-colors"
                     >
                       <X className="h-4 w-4 text-brand-black" />
                     </button>

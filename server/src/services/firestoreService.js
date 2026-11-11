@@ -983,3 +983,52 @@ export const paymentController = {
 };
 
 export { COLLECTIONS, logAction };
+
+// ---------- Data repair ----------
+const titleCase = (s) => s.toLowerCase().replace(/(^|[\s-])(\w)/g, (_m, a, b) => a + b.toUpperCase());
+const splitList = (value) => String(value || '').split(/[,/&|]+/).map((v) => v.trim()).filter(Boolean);
+
+/**
+ * Early versions of the admin form let a single variant hold "BLACK,WHITE" as the colour and
+ * "M,L,XL" as the size, producing SKUs like "004-BLACK,WHITE-M,L,XL" and a product customers
+ * cannot order properly. This expands such variants into one real variant per colour/size
+ * (SKU "004-Black-M"), keeping the stock figure on each. Idempotent: clean products are untouched.
+ */
+export const repairLegacyVariants = async () => {
+  try {
+    let docs;
+    if (process.env.DEV_MODE === 'true') {
+      const snap = await db.collection(COLLECTIONS.PRODUCTS).query(() => true);
+      docs = snap.map((d) => ({ id: d.data().id || d.id, data: d.data() }));
+    } else {
+      const snap = await db.collection(COLLECTIONS.PRODUCTS).get();
+      docs = snap.docs.map((d) => ({ id: d.id, data: d.data() }));
+    }
+    let fixed = 0;
+    for (const { id, data } of docs) {
+      const variants = Array.isArray(data.variants) ? data.variants : [];
+      if (!variants.some((v) => /[,/&|]/.test(`${v.color}${v.size}`))) continue;
+      const out = [];
+      const seen = new Set();
+      for (const v of variants) {
+        const colors = splitList(v.color);
+        const sizes = splitList(v.size);
+        const isLegacy = colors.length > 1 || sizes.length > 1;
+        const list = isLegacy ? colors.flatMap((c) => sizes.map((s) => [c, s])) : [[v.color, v.size]];
+        for (const [c, s] of list) {
+          const color = isLegacy ? titleCase(c) : c;
+          const size = isLegacy ? s.toUpperCase() : s;
+          const sku = isLegacy ? `${data.sku}-${color}-${size}` : v.sku;
+          if (seen.has(sku)) continue;
+          seen.add(sku);
+          out.push({ ...v, sku, color, size });
+        }
+      }
+      await db.collection(COLLECTIONS.PRODUCTS).doc(id).set({ ...data, variants: out, updatedAt: new Date().toISOString() }, { merge: true });
+      fixed += 1;
+    }
+    if (fixed) console.log(`[repair] Expanded legacy comma-separated variants on ${fixed} product(s).`);
+  } catch (err) {
+    console.error('[repair] variant repair skipped:', err.message);
+  }
+};

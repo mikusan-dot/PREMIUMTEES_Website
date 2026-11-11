@@ -45,7 +45,6 @@ export const Cart = () => {
                     <div>
                       <h3 className="font-bold text-brand-black">{item.name}</h3>
                       <p className="text-sm text-brand-muted">{item.color} · {item.size}</p>
-                      <p className="text-sm text-brand-muted">SKU: {item.variantId}</p>
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="font-bold">৳{item.price}</span>

@@ -165,7 +165,6 @@ export const ProductDetail = () => {
 
   const others = dedupeProducts(related).filter((p) => p.id !== product.id).slice(0, 4);
   const details = [
-    ['SKU', product.sku],
     ['Fit', product.fit],
     ['Fabric', product.fabric],
     ['Weight', product.gsm ? `${product.gsm} GSM` : null],

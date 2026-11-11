@@ -313,7 +313,7 @@ export const Header = () => {
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search products, SKU, or fit..."
+                placeholder="Search products or fit..."
                 className="h-10 min-w-0 flex-1 bg-transparent text-sm text-brand-charcoal placeholder:text-brand-muted focus:outline-none"
               />
               <button

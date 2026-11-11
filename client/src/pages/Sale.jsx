@@ -3,7 +3,7 @@ import { useSeo } from '@/hooks/useSeo';
 import { ProductBrowser } from '@/components/product/ProductBrowser';
 
 export const Sale = () => {
-  useSeo({ title: 'Sale', description: 'Premium tees, hoodies and sweatshirts at reduced prices while the sale lasts.' });
+  useSeo({ title: 'Sale', description: 'Tees, hoodies and sweatshirts at reduced prices while the sale lasts.' });
   return (
     <section className="py-12 md:py-20">
       <div className="container-premium">

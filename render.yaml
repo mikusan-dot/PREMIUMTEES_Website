@@ -23,7 +23,8 @@ services:
       # Old hostnames that should forward visitors to VITE_SITE_URL (comma-separated, hostnames only).
       # Fill in the OLD frontend hostname (e.g. premium-tees-client.onrender.com) - see DEPLOYMENT.md.
       - key: VITE_LEGACY_HOSTS
-        value: premium-tees-client.onrender.com    routes:
+        value: premium-tees-client.onrender.com
+    routes:
       # Rewrite client-side routes to index.html so React Router handles them.
       - type: rewrite
         source: /*

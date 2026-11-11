@@ -152,7 +152,7 @@ export const AdminCategories = () => {
               <ImageField label="Thumbnail" hint="Shown on cards and in the menu." value={form.image} onChange={(image) => setForm((f) => ({ ...f, image }))} onError={(text) => setMessage({ type: 'error', text })} />
               <ImageField label="Banner" hint="Wide hero on the category page." aspect="aspect-[16/9]" value={form.bannerImage} onChange={(bannerImage) => setForm((f) => ({ ...f, bannerImage }))} onError={(text) => setMessage({ type: 'error', text })} />
             </div>
-            <Field label={`SEO title (${form.seoTitle.length}/70)`}><Input value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} maxLength={70} placeholder={`${form.name || 'Category'} | Premium Tees`} /></Field>
+            <Field label={`SEO title (${form.seoTitle.length}/70)`}><Input value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} maxLength={70} placeholder={`${form.name || 'Category'} | Unhinged Co.`} /></Field>
             <Field label={`SEO description (${form.seoDescription.length}/170)`}><textarea value={form.seoDescription} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} rows={2} maxLength={170} className="w-full rounded-md border border-gray-300 bg-brand-white px-3 py-2.5 text-sm text-brand-black focus:outline-none focus:ring-2 focus:ring-brand-accent" /></Field>
             <label className="flex items-center gap-2 text-sm text-gray-700">
               <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="h-4 w-4" /> Active (visible on the store)

@@ -45,6 +45,13 @@ const saleLive = (p, nowMs = Date.now()) => {
   return end === null || Number.isNaN(end) || end > nowMs;
 };
 
+// Turn a product name into a URL-safe slug.
+const slugify = (name) => String(name || '')
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '') || 'product';
+
 // True when another product document already uses this slug (slugs are the public product URL).
 const slugTaken = async (slug, exceptId = null) => {
   if (process.env.DEV_MODE === 'true') {
@@ -53,6 +60,15 @@ const slugTaken = async (slug, exceptId = null) => {
   }
   const snap = await db.collection(COLLECTIONS.PRODUCTS).where('slug', '==', slug).limit(5).get();
   return snap.docs.some((d) => d.id !== exceptId);
+};
+
+// Return a slug that is guaranteed unique across the products collection.
+// Legacy duplicates are broken by appending a short unique suffix so no two
+// products ever share a public URL.
+const makeUniqueSlug = async (baseSlug, exceptId = null) => {
+  let slug = baseSlug;
+  while (await slugTaken(slug, exceptId)) slug = `${baseSlug}-${nanoid(4)}`;
+  return slug;
 };
 
 export const productController = {
@@ -151,18 +167,14 @@ export const productController = {
     }
   },
 
-  getBySlug: async (req, res) => {
+  // Look up a single product by its unique, stable Firestore document ID.
+  // Never falls back to the first slug match, so duplicate slugs can never
+  // surface the wrong product.
+  getById: async (req, res) => {
     try {
-      let product = null;
-      if (process.env.DEV_MODE === 'true') {
-        const snap = await db.collection(COLLECTIONS.PRODUCTS).query((d) => d.slug === req.params.slug);
-        product = snap.length ? snap[0].data() : null;
-      } else {
-        const snap = await db.collection(COLLECTIONS.PRODUCTS).where('slug', '==', req.params.slug).limit(1).get();
-        product = snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
-      }
-      if (!product) return res.status(404).json({ error: 'Product not found' });
-      res.json({ product });
+      const snap = await db.collection(COLLECTIONS.PRODUCTS).doc(req.params.id).get();
+      if (!snap.exists) return res.status(404).json({ error: 'Product not found' });
+      res.json({ product: { id: snap.id, ...snap.data() } });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -171,12 +183,14 @@ export const productController = {
   create: async (req, res) => {
     try {
       const data = req.validated;
-      if (await slugTaken(data.slug)) {
-        return res.status(409).json({ error: `A product with the slug "${data.slug}" already exists. Use a different slug (e.g. add a number).` });
-      }
+      // Generate a unique, stable slug from the name when none is given, and
+      // guarantee uniqueness by appending a short suffix on any collision so
+      // creating a product never overwrites another product's URL.
+      const slug = await makeUniqueSlug(data.slug || slugify(data.name));
       const now = new Date().toISOString();
       const doc = await db.collection(COLLECTIONS.PRODUCTS).add({
         ...data,
+        slug,
         status: data.status || 'active',
         featured: !!data.featured,
         bestSeller: !!data.bestSeller,
@@ -185,8 +199,8 @@ export const productController = {
         createdAt: now,
         updatedAt: now,
       });
-      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'product_created', target: `products/${doc.id}`, details: data });
-      res.status(201).json({ id: doc.id, message: 'Product created' });
+      await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'product_created', target: `products/${doc.id}`, details: { ...data, slug } });
+      res.status(201).json({ id: doc.id, slug, message: 'Product created' });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

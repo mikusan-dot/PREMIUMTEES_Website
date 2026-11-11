@@ -76,7 +76,7 @@ export const ProductCard = ({ product, className, imagePriority = false }) => {
       )}
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-brand-offwhite">
-        <Link to={product.slug ? `/product/${product.slug}` : '/shop'} aria-label={`View ${product.name}`} className="block h-full w-full">
+        <Link to={product.id ? `/product/${product.id}` : '/shop'} aria-label={`View ${product.name}`} className="block h-full w-full">
           <img
             src={product.images?.[0] || PLACEHOLDER}
             alt={product.name}
@@ -138,7 +138,7 @@ export const ProductCard = ({ product, className, imagePriority = false }) => {
 
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
-          <Link to={product.slug ? `/product/${product.slug}` : '/shop'} className="min-w-0">
+          <Link to={product.id ? `/product/${product.id}` : '/shop'} className="min-w-0">
             <h3 className="truncate text-sm font-semibold tracking-tight text-brand-black transition-colors group-hover:text-brand-accent sm:text-base">
               {product.name}
             </h3>

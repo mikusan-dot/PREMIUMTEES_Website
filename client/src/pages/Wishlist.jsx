@@ -64,7 +64,7 @@ export const Wishlist = () => {
             {items.map((product) => {
               const inStock = isProductInStock(product);
               return (
-                <Card key={product.id} className="group cursor-pointer" onClick={() => navigate(`/product/${product.slug}`)}>
+                <Card key={product.id} className="group cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
                   <div className="relative h-64 rounded-xl overflow-hidden mb-4 group-hover:border-brand-accent transition-colors border border-brand-border">
                     <img src={product.images?.[0] || PLACEHOLDER} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     {product.badge && <Badge variant="sale" className="absolute top-3 left-3">{product.badge}</Badge>}

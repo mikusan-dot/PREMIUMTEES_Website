@@ -63,7 +63,7 @@ export const ProductSection = ({
       ) : products.length > 0 ? (
         <div className={cn('grid grid-cols-2 gap-4 md:gap-6', desktopColumns)}>
           {products.map((product, index) => (
-            <ProductCard key={product.id || product.slug || index} product={product} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (

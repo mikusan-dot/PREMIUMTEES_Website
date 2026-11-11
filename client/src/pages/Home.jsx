@@ -35,7 +35,7 @@ const productImage = (product) => product?.images?.find(Boolean) || '';
 
 const LookTile = ({ product, className, priority = false }) => (
   <Link
-    to={`/product/${product.slug}`}
+    to={`/product/${product.id}`}
     className={cn('group relative block overflow-hidden bg-brand-offwhite', className)}
   >
     <img
@@ -163,7 +163,7 @@ export const Home = () => {
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-night/20 via-transparent to-transparent" />
               {featuredProduct && (
                 <Link
-                  to={`/product/${featuredProduct.slug}`}
+                  to={`/product/${featuredProduct.id}`}
                   className="absolute bottom-4 left-4 right-4 bg-brand-white/95 p-4 backdrop-blur transition-colors hover:bg-brand-white sm:right-auto sm:max-w-[250px]"
                 >
                   <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-brand-accent">Featured piece</p>

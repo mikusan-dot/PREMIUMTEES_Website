@@ -40,7 +40,7 @@ const Skeleton = () => (
 );
 
 export const ProductDetail = () => {
-  const { slug } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCartStore();
   const { categories } = useCategories();
@@ -48,8 +48,8 @@ export const ProductDetail = () => {
   const { ids, toggle } = useWishlistStore();
 
   const { data: product, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['product', slug],
-    queryFn: async () => (await api.get(`/products/${encodeURIComponent(slug)}`)).data.product,
+    queryKey: ['product', id],
+    queryFn: async () => (await api.get(`/products/${encodeURIComponent(id)}`)).data.product,
     retry: (count, err) => err?.response?.status !== 404 && count < 2,
   });
 

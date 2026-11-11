@@ -10,7 +10,7 @@ const router = Router();
 
 // Public product routes
 router.get('/products', productController.list);
-router.get('/products/:slug', productController.getBySlug);
+router.get('/products/:id', productController.getById);
 
 // Public collections
 router.get('/collections', collectionController.list);

@@ -1,5 +1,6 @@
 import { VariantMatrix } from '@/admin/components/VariantMatrix';
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/input';
 
 export const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
@@ -188,6 +190,7 @@ export const AdminProducts = () => {
       };
       if (editingId) await api.put(`/admin/products/${editingId}`, payload);
       else await api.post('/admin/products', payload);
+      queryClient.invalidateQueries(); // storefront lists refetch immediately
       const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
       setMessage({
         type: 'success',

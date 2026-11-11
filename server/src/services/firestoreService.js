@@ -45,6 +45,16 @@ const saleLive = (p, nowMs = Date.now()) => {
   return end === null || Number.isNaN(end) || end > nowMs;
 };
 
+// True when another product document already uses this slug (slugs are the public product URL).
+const slugTaken = async (slug, exceptId = null) => {
+  if (process.env.DEV_MODE === 'true') {
+    const snap = await db.collection(COLLECTIONS.PRODUCTS).query((d) => d.slug === slug);
+    return snap.some((d) => (d.data().id || d.id) !== exceptId);
+  }
+  const snap = await db.collection(COLLECTIONS.PRODUCTS).where('slug', '==', slug).limit(5).get();
+  return snap.docs.some((d) => d.id !== exceptId);
+};
+
 export const productController = {
   list: async (req, res) => {
     try {
@@ -66,13 +76,15 @@ export const productController = {
       }
 
       // Never return the same product twice (duplicate documents / repeated seeds).
-      const seen = new Set();
-      products = products.filter((p) => {
+      // When two documents share a slug keep the most recently created one, so a freshly
+      // uploaded product is never hidden behind an older duplicate.
+      const newestBySlug = new Map();
+      products.forEach((p) => {
         const key = p.slug || p.id;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
+        const prev = newestBySlug.get(key);
+        if (!prev || String(p.createdAt || '') > String(prev.createdAt || '')) newestBySlug.set(key, p);
       });
+      products = products.filter((p) => newestBySlug.get(p.slug || p.id) === p);
 
       const nowMs = Date.now();
       const priceOf = (p) => (saleLive(p, nowMs) ? Number(p.salePrice) : Number(p.price) || 0);
@@ -159,6 +171,9 @@ export const productController = {
   create: async (req, res) => {
     try {
       const data = req.validated;
+      if (await slugTaken(data.slug)) {
+        return res.status(409).json({ error: `A product with the slug "${data.slug}" already exists. Use a different slug (e.g. add a number).` });
+      }
       const now = new Date().toISOString();
       const doc = await db.collection(COLLECTIONS.PRODUCTS).add({
         ...data,
@@ -180,6 +195,9 @@ export const productController = {
   update: async (req, res) => {
     try {
       const data = req.validated;
+      if (await slugTaken(data.slug, req.params.id)) {
+        return res.status(409).json({ error: `Another product already uses the slug "${data.slug}". Use a different slug.` });
+      }
       await db.collection(COLLECTIONS.PRODUCTS).doc(req.params.id).set({ ...data, updatedAt: new Date().toISOString() }, { merge: true });
       await logAction({ adminId: req.admin?.uid, adminName: req.admin?.email, action: 'product_updated', target: `products/${req.params.id}`, details: data });
       res.json({ message: 'Product updated' });

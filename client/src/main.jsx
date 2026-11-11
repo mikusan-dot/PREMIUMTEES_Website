@@ -29,8 +29,9 @@ class ErrorBoundary extends React.Component {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: false,
+      // Short cache so products added in the admin appear within a minute (and on tab refocus).
+      staleTime: 60 * 1000,
+      refetchOnWindowFocus: true,
       // Render's free tier spins the API down when idle; the first request can take ~30-50s.
       // Retry with backoff instead of surfacing an error straight away.
       retry: 4,

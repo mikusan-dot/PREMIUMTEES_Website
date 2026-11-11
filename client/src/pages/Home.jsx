@@ -75,7 +75,7 @@ export const Home = () => {
       const { data } = await api.get('/products?limit=100');
       return data.products || [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
   });
 
   const { categories, isLoading: categoriesLoading } = useCategories();

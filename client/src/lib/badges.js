@@ -103,7 +103,7 @@ export const getStockLabel = (product) => {
 export const dedupeProducts = (products = []) => {
   const seen = new Set();
   return products.filter((product) => {
-    const key = product?.slug || product?.id || product?.sku || product?.name;
+    const key = product?.id || product?.slug || product?.sku || product?.name;
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
